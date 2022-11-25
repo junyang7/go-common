@@ -15,32 +15,20 @@ type mail struct {
 	attach   []string
 }
 
-func New(host string, port int, username string, password string) *mail {
+func New(host string, port int, username string, password string, from string, to []string, subject string, content string) *mail {
 	return &mail{
 		host:     host,
 		port:     port,
 		username: username,
 		password: password,
+		from:     from,
+		to:       to,
+		subject:  subject,
+		content:  content,
 	}
-}
-func (this *mail) From(from string) *mail {
-	this.from = from
-	return this
-}
-func (this *mail) To(to ...string) *mail {
-	this.to = to
-	return this
 }
 func (this *mail) Cc(cc ...string) *mail {
 	this.cc = cc
-	return this
-}
-func (this *mail) Subject(subject string) *mail {
-	this.subject = subject
-	return this
-}
-func (this *mail) Content(content string) *mail {
-	this.content = content
 	return this
 }
 func (this *mail) Attach(attach ...string) *mail {
