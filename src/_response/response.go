@@ -8,3 +8,11 @@ type Response struct {
 	Consume int64       `json:"consume"`
 	Trace   string      `json:"trace"`
 }
+
+func New() *Response {
+	return &Response{
+		Code:    0,
+		Message: "success",
+		Data:    struct{}{},
+	}
+}
