@@ -15,7 +15,7 @@ type interceptor struct {
 
 func Insure(ok bool) *interceptor {
 	return &interceptor{
-		ok:      false,
+		ok:      ok,
 		code:    -1,
 		message: "failure",
 		data:    struct{}{},
