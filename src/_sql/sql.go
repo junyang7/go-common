@@ -5,11 +5,39 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/junyang7/go-common/src/_as"
-	"github.com/junyang7/go-common/src/_sql/_conf"
+	"github.com/junyang7/go-common/src/_map"
+	"github.com/junyang7/go-common/src/_slice"
 	"math/rand"
 	"strings"
 	"time"
 )
+
+type Connection struct {
+	Driver    string `json:"driver"`
+	Host      string `json:"host"`
+	Port      string `json:"port"`
+	Database  string `json:"database"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Charset   string `json:"charset"`
+	Collation string `json:"collation"`
+	Pool      *sql.DB
+}
+
+type Group struct {
+	Count      int           `json:"count"`
+	Connection []*Connection `json:"connection"`
+}
+
+type Cluster struct {
+	Master *Group
+	Slaver *Group
+}
+
+type Database struct {
+	Count   int
+	Cluster []*Cluster
+}
 
 type Sql struct {
 	baseDatabase  string
@@ -27,10 +55,46 @@ type Sql struct {
 	limit         int
 	parameter     []interface{}
 	row           map[string]interface{}
+	rowList       []map[string]interface{}
 	placeholder   string
 	sql           string
 	tx            *sql.Tx
-	machine       *_conf.Machine
+	dsn           string
+}
+
+var conf = map[string]*Database{}
+var pool = map[string]*sql.DB{}
+
+func Initialize(database map[string]*Database) {
+	conf = database
+	for _, cluster := range conf {
+		for _, group := range cluster.Cluster {
+			for _, machine := range group.Master.Connection {
+				openAndSaveToPool(machine)
+			}
+			for _, machine := range group.Slaver.Connection {
+				openAndSaveToPool(machine)
+			}
+		}
+	}
+}
+
+func getDsnByConnection(connection *Connection) string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
+}
+func openAndSaveToPool(connection *Connection) {
+	dsn := getDsnByConnection(connection)
+	if _, ok := pool[dsn]; ok {
+		return
+	}
+	p, err := sql.Open(connection.Driver, dsn)
+	if nil != err {
+		panic(err)
+	}
+	p.SetMaxOpenConns(50)
+	p.SetConnMaxIdleTime(50)
+	p.SetConnMaxLifetime(1 * time.Hour)
+	pool[dsn] = p
 }
 
 func New(baseDatabase string, baseTable string) *Sql {
@@ -83,11 +147,10 @@ func (this *Sql) Limit(limit int) *Sql {
 	this.limit = limit
 	return this
 }
-func (this *Sql) Parameter(parameter ...interface{}) *Sql {
+func (this *Sql) Parameter(parameter []interface{}) *Sql {
 	this.parameter = parameter
 	return this
 }
-
 func (this *Sql) getTable() string {
 	if this.shard {
 		return this.baseTable + "_" + _as.String(this.tableIndex)
@@ -130,6 +193,12 @@ func (this *Sql) getRow() map[string]interface{} {
 	}
 	return this.row
 }
+func (this *Sql) getRowList() []map[string]interface{} {
+	if 0 == len(this.rowList) {
+		return []map[string]interface{}{}
+	}
+	return this.rowList
+}
 func (this *Sql) getWhere() string {
 	if "" == this.where {
 		return ""
@@ -137,44 +206,36 @@ func (this *Sql) getWhere() string {
 	return " WHERE " + this.where
 }
 func (this *Sql) getPool() *sql.DB {
-	if nil == this.machine {
-		cluster := _conf.Conf.Database[this.baseDatabase].Cluster[_as.String(this.databaseIndex)]
+	if "" == this.dsn {
+		cluster := conf[this.baseDatabase].Cluster[this.databaseIndex]
+		var group *Group
 		if this.master {
-			this.machine = cluster.Master.Machine[0]
+			group = cluster.Master
 		} else {
-			r := 0
-			if count := cluster.Slaver.Count; count > 1 {
-				rand.Seed(time.Now().Unix())
-				r = rand.Intn(cluster.Slaver.Count - 1)
-			}
-			this.machine = cluster.Slaver.Machine[r]
+			group = cluster.Slaver
 		}
-	}
-	if nil == this.machine.Pool {
-		pool, err := sql.Open(this.machine.Driver, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", this.machine.Username, this.machine.Password, this.machine.Host, this.machine.Port, this.machine.Database))
-		if nil != err {
-			panic(err)
+		r := 0
+		if count := group.Count; count > 1 {
+			rand.Seed(time.Now().Unix())
+			r = rand.Intn(group.Count - 1)
 		}
-		this.machine.Pool = pool
+		this.dsn = getDsnByConnection(group.Connection[r])
 	}
-	return this.machine.Pool
+	return pool[this.dsn]
 }
 
-func (this *Sql) buildAdd() *Sql {
-	row := this.getRow()
-	fieldList := make([]string, 0, len(row))
-	for field, _ := range row {
-		fieldList = append(fieldList, field)
+func (this *Sql) buildAddList() *Sql {
+	rowList := this.getRowList()
+	row := rowList[0]
+	fieldList := _map.KeyList(row)
+	this.field = _slice.Implode(fieldList, ",")
+	this.placeholder = strings.TrimRight(strings.Repeat("("+strings.TrimRight(strings.Repeat("?, ", len(row)), " ,")+"), ", len(rowList)), " ,")
+	for _, row := range rowList {
+		for _, field := range fieldList {
+			this.parameter = append(this.parameter, row[field])
+		}
 	}
-	this.field = strings.Join(fieldList, ",")
-	this.parameter = make([]interface{}, 0, len(row))
-	placeholderList := make([]string, 0, len(row))
-	for _, field := range fieldList {
-		this.parameter = append(this.parameter, row[field])
-		placeholderList = append(placeholderList, "?")
-	}
-	this.placeholder = strings.Join(placeholderList, ",")
-	this.sql = fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", this.getTable(), this.getField(), this.placeholder)
+	this.sql = fmt.Sprintf("INSERT INTO %s (%s) VALUES %s;", this.getTable(), this.getField(), this.placeholder)
 	return this
 }
 func (this *Sql) buildCount() *Sql {
@@ -295,8 +356,19 @@ func (this *Sql) query() []map[string]string {
 
 func (this *Sql) Add(row map[string]interface{}) int64 {
 	this.master = true
-	this.row = row
-	this.buildAdd()
+	this.rowList = []map[string]interface{}{row}
+	this.buildAddList()
+	res := this.execute()
+	lastInsertId, err := res.LastInsertId()
+	if err != nil {
+		panic(err)
+	}
+	return lastInsertId
+}
+func (this *Sql) AddList(rowList []map[string]interface{}) int64 {
+	this.master = true
+	this.rowList = rowList
+	this.buildAddList()
 	res := this.execute()
 	lastInsertId, err := res.LastInsertId()
 	if err != nil {
