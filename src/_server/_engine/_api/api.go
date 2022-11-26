@@ -1,18 +1,50 @@
-package _server
+package _api
 
 import (
 	"github.com/junyang7/go-common/src/_context"
+	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_response"
-	"github.com/junyang7/go-common/src/_server/_conf"
 	"github.com/junyang7/go-common/src/_server/_router"
 	"net/http"
 	"regexp"
 	"strings"
 )
 
+type Conf struct {
+	Ip   string `json:"ip"`
+	Port string `json:"port"`
+	Ipv4 struct {
+		Black []string
+		White []string
+	}
+	Method struct {
+		Black []string
+		White []string
+	}
+	Origin []string
+	Header map[string]string
+}
+
 type engine struct {
-	mode     string
-	conf     *_conf.Conf
+	conf *Conf
+}
+
+func Initialize(conf *Conf) {
+	this := &engine{conf: conf}
+	err := http.ListenAndServe(this.conf.Ip+":"+this.conf.Port, this)
+	_interceptor.Insure(nil != err).Do()
+}
+
+func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	p := &processor{
+		response: &_response.Response{},
+		ctx:      &_context.Context{W: w, R: r},
+	}
+	p.do()
+}
+
+type processor struct {
+	conf     *Conf
 	response *_response.Response
 	ctx      *_context.Context
 	w        http.ResponseWriter
@@ -20,7 +52,7 @@ type engine struct {
 	router   *_router.Router
 }
 
-func (this *engine) do() {
+func (this *processor) do() {
 	defer func() {
 		if err := recover(); nil != err {
 			this.ctx.Json(err)
@@ -36,16 +68,16 @@ func (this *engine) do() {
 	this.middlewareAfter()
 }
 
-func (this *engine) business() {
+func (this *processor) business() {
 	this.router.Handler(this.ctx)
 }
-func (this *engine) checkIp() {
+func (this *processor) checkIp() {
 
 }
-func (this *engine) checkMethod() {
+func (this *processor) checkMethod() {
 
 }
-func (this *engine) checkOrigin() {
+func (this *processor) checkOrigin() {
 	origin := this.ctx.Server("origin")
 	matchedList := regexp.MustCompile("(\\S+)://([^:]+):?(\\d+)?").FindStringSubmatch(strings.Trim(origin, "/"))
 	if 0 == len(matchedList) {
@@ -63,7 +95,7 @@ func (this *engine) checkOrigin() {
 	}
 	panic("跨域阻止")
 }
-func (this *engine) checkRouter() {
+func (this *processor) checkRouter() {
 	path := this.ctx.Server("path")
 	if router, ok := _router.RouterMap[path]; ok {
 		this.router = router
@@ -71,12 +103,12 @@ func (this *engine) checkRouter() {
 	}
 	panic("资源不存在")
 }
-func (this *engine) checkRouterMethod() {
+func (this *processor) checkRouterMethod() {
 
 }
-func (this *engine) middlewareAfter() {
+func (this *processor) middlewareAfter() {
 
 }
-func (this *engine) middlewareBefore() {
+func (this *processor) middlewareBefore() {
 
 }
