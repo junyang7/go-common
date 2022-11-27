@@ -30,13 +30,13 @@ type Group struct {
 }
 
 type Cluster struct {
-	Master *Group
-	Slaver *Group
+	Master *Group `json:"master"`
+	Slaver *Group `json:"slaver"`
 }
 
 type Database struct {
-	Count   int
-	Cluster []*Cluster
+	Count   int        `json:"count"`
+	Cluster []*Cluster `json:"cluster"`
 }
 
 type Sql struct {
@@ -151,6 +151,7 @@ func (this *Sql) Parameter(parameter []interface{}) *Sql {
 	this.parameter = parameter
 	return this
 }
+
 func (this *Sql) getTable() string {
 	if this.shard {
 		return this.baseTable + "_" + _as.String(this.tableIndex)
