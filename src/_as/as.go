@@ -130,3 +130,46 @@ func Int(data interface{}) int {
 func ByteList(data interface{}) []byte {
 	return []byte(String(data))
 }
+func Float64(data interface{}) float64 {
+	switch data.(type) {
+	case []byte:
+		return 0
+	case string:
+		f64, err := strconv.ParseFloat(data.(interface{}).(string), 64)
+		if nil != err {
+			return 0
+		}
+		return f64
+	case int8:
+		return float64(data.(interface{}).(int8))
+	case int16:
+		return float64(data.(interface{}).(int16))
+	case int32:
+		return float64(data.(interface{}).(int32))
+	case int64:
+		return float64(data.(interface{}).(int64))
+	case int:
+		return float64(data.(interface{}).(int))
+	case uint8:
+		return float64(data.(interface{}).(uint8))
+	case uint16:
+		return float64(data.(interface{}).(uint16))
+	case uint32:
+		return float64(data.(interface{}).(uint32))
+	case uint64:
+		return float64(data.(interface{}).(uint64))
+	case uint:
+		return float64(data.(interface{}).(uint))
+	case float32:
+		return float64(data.(interface{}).(float32))
+	case float64:
+		return data.(interface{}).(float64)
+	case bool:
+		if data.(interface{}).(bool) {
+			return 1
+		}
+		return 0
+	default:
+		return 0
+	}
+}
