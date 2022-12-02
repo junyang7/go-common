@@ -21,7 +21,6 @@ type Connection struct {
 	Password  string `json:"password"`
 	Charset   string `json:"charset"`
 	Collation string `json:"collation"`
-	Pool      *sql.DB
 }
 
 type Group struct {
@@ -62,29 +61,29 @@ type Sql struct {
 	dsn           string
 }
 
-var conf = map[string]*Database{}
-var pool = map[string]*sql.DB{}
+var sqlConf = map[string]*Database{}
+var sqlPool = map[string]*sql.DB{}
 
 func Initialize(database map[string]*Database) {
-	conf = database
-	for _, cluster := range conf {
+	sqlConf = database
+	for _, cluster := range sqlConf {
 		for _, group := range cluster.Cluster {
-			for _, machine := range group.Master.Connection {
-				openAndSaveToPool(machine)
+			for _, connection := range group.Master.Connection {
+				openAndSaveToPool(connection)
 			}
-			for _, machine := range group.Slaver.Connection {
-				openAndSaveToPool(machine)
+			for _, connection := range group.Slaver.Connection {
+				openAndSaveToPool(connection)
 			}
 		}
 	}
 }
 
-func getDsnByConnection(connection *Connection) string {
+func getDsn(connection *Connection) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
 }
 func openAndSaveToPool(connection *Connection) {
-	dsn := getDsnByConnection(connection)
-	if _, ok := pool[dsn]; ok {
+	dsn := getDsn(connection)
+	if _, ok := sqlPool[dsn]; ok {
 		return
 	}
 	p, err := sql.Open(connection.Driver, dsn)
@@ -94,7 +93,7 @@ func openAndSaveToPool(connection *Connection) {
 	p.SetMaxOpenConns(50)
 	p.SetConnMaxIdleTime(50)
 	p.SetConnMaxLifetime(1 * time.Hour)
-	pool[dsn] = p
+	sqlPool[dsn] = p
 }
 
 func New(baseDatabase string, baseTable string) *Sql {
@@ -208,7 +207,10 @@ func (this *Sql) getWhere() string {
 }
 func (this *Sql) getPool() *sql.DB {
 	if "" == this.dsn {
-		cluster := conf[this.baseDatabase].Cluster[this.databaseIndex]
+		if !this.shard {
+			this.databaseIndex = 0
+		}
+		cluster := sqlConf[this.baseDatabase].Cluster[this.databaseIndex]
 		var group *Group
 		if this.master {
 			group = cluster.Master
@@ -220,9 +222,9 @@ func (this *Sql) getPool() *sql.DB {
 			rand.Seed(time.Now().Unix())
 			r = rand.Intn(group.Count - 1)
 		}
-		this.dsn = getDsnByConnection(group.Connection[r])
+		this.dsn = getDsn(group.Connection[r])
 	}
-	return pool[this.dsn]
+	return sqlPool[this.dsn]
 }
 
 func (this *Sql) buildAddList() *Sql {
