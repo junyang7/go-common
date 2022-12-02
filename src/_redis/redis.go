@@ -2,30 +2,118 @@ package _redis
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/junyang7/go-common/src/_as"
+	"math/rand"
 	"time"
 )
 
-type Redis struct {
-	ctx context.Context
+type Connection struct {
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Database string `json:"database"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+type Group struct {
+	Count      int           `json:"count"`
+	Connection []*Connection `json:"connection"`
+}
+type Cluster struct {
+	Master *Group `json:"master"`
+	Slaver *Group `json:"slaver"`
+}
+type Conf struct {
+	Count   int        `json:"count"`
+	Cluster []*Cluster `json:"cluster"`
 }
 
-func New() *Redis {
-	return &Redis{
-		ctx: context.Background(),
+var redisConf = map[string]*Conf{}
+var redisPool = map[string]*redis.Client{}
+
+func Initialize(conf map[string]*Conf) {
+	redisConf = conf
+	for _, cluster := range conf {
+		for _, group := range cluster.Cluster {
+			for _, machine := range group.Master.Connection {
+				openAndSaveToPool(machine)
+			}
+			for _, machine := range group.Slaver.Connection {
+				openAndSaveToPool(machine)
+			}
+		}
 	}
 }
 
-func (this *Redis) getPool() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     ":6379",
-		Password: "",
-		DB:       0,
+func openAndSaveToPool(connection *Connection) {
+	uk := getUk(connection)
+	if _, ok := redisPool[uk]; ok {
+		return
+	}
+	p := redis.NewClient(&redis.Options{
+		Addr:     connection.Host + ":" + connection.Port,
+		DB:       _as.Int(connection.Database),
+		Username: connection.Username,
+		Password: connection.Password,
 	})
+	redisPool[uk] = p
+}
+func getDsn(connection *Connection) string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
+}
+func getUk(connection *Connection) string {
+	return fmt.Sprintf("%s:%s:%s", connection.Host, connection.Port, connection.Password)
+}
+
+type Redis struct {
+	baseDatabase  string
+	shard         bool
+	databaseIndex int
+	master        bool
+	uk            string
+}
+
+func New(baseDatabase string) *Redis {
+	return &Redis{
+		baseDatabase: baseDatabase,
+	}
+}
+func (this *Redis) DatabaseIndex(databaseIndex int) *Redis {
+	this.databaseIndex = databaseIndex
+	return this
+}
+func (this *Redis) Shard() *Redis {
+	this.shard = true
+	return this
+}
+func (this *Redis) Master() *Redis {
+	this.master = true
+	return this
+}
+func (this *Redis) getPool() *redis.Client {
+	if "" == this.uk {
+		if !this.shard {
+			this.databaseIndex = 0
+		}
+		cluster := redisConf[this.baseDatabase].Cluster[this.databaseIndex]
+		var group *Group
+		if this.master {
+			group = cluster.Master
+		} else {
+			group = cluster.Slaver
+		}
+		r := 0
+		if count := group.Count; count > 1 {
+			rand.Seed(time.Now().Unix())
+			r = rand.Intn(group.Count - 1)
+		}
+		this.uk = getUk(group.Connection[r])
+	}
+	return redisPool[this.uk]
 }
 func (this *Redis) getCtx() context.Context {
-	return this.ctx
+	return context.Background()
 }
 
 // generic
