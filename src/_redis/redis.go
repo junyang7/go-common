@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/junyang7/go-common/src/_as"
+	"github.com/junyang7/go-common/src/_interceptor"
 	"math/rand"
 	"time"
 )
@@ -96,7 +97,16 @@ func (this *Redis) getPool() *redis.Client {
 		if !this.shard {
 			this.databaseIndex = 0
 		}
-		cluster := redisConf[this.baseDatabase].Cluster[this.databaseIndex]
+		database, ok := redisConf[this.baseDatabase]
+		_interceptor.Insure(ok).
+			Message("数据库配置不存在").
+			Data(map[string]interface{}{"database": this.baseDatabase}).
+			Do()
+		_interceptor.Insure(this.databaseIndex < database.Count).
+			Message("数据库配置不存在").
+			Data(map[string]interface{}{"database": this.baseDatabase, "index": this.databaseIndex}).
+			Do()
+		cluster := database.Cluster[this.databaseIndex]
 		var group *Group
 		if this.master {
 			group = cluster.Master
