@@ -1,12 +1,9 @@
 package _api
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/junyang7/go-common/src/_context"
-	"github.com/junyang7/go-common/src/_exception"
 	"github.com/junyang7/go-common/src/_interceptor"
-	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_server/_router"
 	"net/http"
 	"regexp"
@@ -115,21 +112,22 @@ func (this *processor) middlewareBefore() {
 
 }
 func (this *processor) render(err interface{}) {
-	res := _response.New()
-	switch err.(type) {
-	case *_exception.Exception:
-		err := err.(*_exception.Exception)
-		res.Code = err.Code
-		res.Message = err.Message
-		res.Data = err.Data
-	case string:
-		res.Code = -1
-		res.Message = err.(string)
-	default:
-		res.Code = -1
-		res.Message = "failure"
-	}
-	this.w.Header().Set("content-type", "application/json")
-	e := json.NewEncoder(this.w)
-	_ = e.Encode(res)
+	fmt.Println(err)
+	//res := _response.New()
+	//switch err.(type) {
+	//case *_exception.Exception:
+	//	err := err.(*_exception.Exception)
+	//	res.Code = err.Code
+	//	res.Message = err.Message
+	//	res.Data = err.Data
+	//case string:
+	//	res.Code = -1
+	//	res.Message = err.(string)
+	//default:
+	//	res.Code = -1
+	//	res.Message = "failure"
+	//}
+	//this.w.Header().Set("content-type", "application/json")
+	//e := json.NewEncoder(this.w)
+	//_ = e.Encode(res)
 }
