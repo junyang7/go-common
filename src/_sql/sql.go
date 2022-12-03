@@ -146,7 +146,7 @@ func (this *Sql) Limit(limit int) *Sql {
 	this.limit = limit
 	return this
 }
-func (this *Sql) Parameter(parameter []interface{}) *Sql {
+func (this *Sql) Parameter(parameter ...interface{}) *Sql {
 	this.parameter = parameter
 	return this
 }
