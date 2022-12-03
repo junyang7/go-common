@@ -2,6 +2,7 @@ package _api
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_exception"
 	"github.com/junyang7/go-common/src/_interceptor"
@@ -55,6 +56,7 @@ type processor struct {
 func (this *processor) do() {
 	defer func() {
 		if err := recover(); nil != err {
+			fmt.Println(err)
 			this.render(err)
 		}
 	}()
@@ -113,9 +115,6 @@ func (this *processor) middlewareBefore() {
 
 }
 func (this *processor) render(err interface{}) {
-	defer func() {
-		_ = recover()
-	}()
 	res := _response.New()
 	switch err.(type) {
 	case *_exception.Exception:
@@ -123,6 +122,9 @@ func (this *processor) render(err interface{}) {
 		res.Code = err.Code
 		res.Message = err.Message
 		res.Data = err.Data
+	case string:
+		res.Code = -1
+		res.Message = err.(string)
 	default:
 		res.Code = -1
 		res.Message = "failure"
