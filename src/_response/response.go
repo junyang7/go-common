@@ -7,8 +7,6 @@ type Response struct {
 	Time    int64       `json:"time"`
 	Consume int64       `json:"consume"`
 	Trace   string      `json:"trace"`
-	File    string      `json:"file"`
-	Line    int         `json:"line"`
 }
 
 func New() *Response {

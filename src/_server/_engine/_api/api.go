@@ -1,9 +1,9 @@
 package _api
 
 import (
+	"fmt"
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_interceptor"
-	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_server/_router"
 	"net/http"
 	"regexp"
@@ -37,24 +37,25 @@ func Initialize(conf *Conf) {
 
 func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := &processor{
-		response: &_response.Response{},
-		ctx:      &_context.Context{W: w, R: r},
+		ctx: &_context.Context{W: w, R: r},
 	}
 	p.do()
 }
 
 type processor struct {
-	conf     *Conf
-	response *_response.Response
-	ctx      *_context.Context
-	w        http.ResponseWriter
-	r        *http.Request
-	router   *_router.Router
+	conf   *Conf
+	ctx    *_context.Context
+	w      http.ResponseWriter
+	r      *http.Request
+	router *_router.Router
 }
 
 func (this *processor) do() {
 	defer func() {
 		if err := recover(); nil != err {
+			fmt.Println(err)
+			fmt.Sprintf("%T", err)
+			// debug时或者记日志是可以把file记录，其他情况new一个response
 			this.ctx.Json(err)
 		}
 	}()

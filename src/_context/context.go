@@ -2,6 +2,7 @@ package _context
 
 import (
 	"encoding/json"
+	"github.com/junyang7/go-common/src/_response"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -153,9 +154,11 @@ func (this *Context) File(name string) *multipart.FileHeader {
 }
 
 func (this *Context) Json(data interface{}) {
+	res := _response.New()
+	res.Data = data
 	this.W.Header().Set("content-type", "application/json")
 	e := json.NewEncoder(this.W)
-	_ = e.Encode(data)
+	_ = e.Encode(res)
 }
 func (this *Context) String(data interface{}) {
 	this.W.Header().Set("content-type", "application/text")

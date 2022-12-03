@@ -2,7 +2,6 @@ package _interceptor
 
 import (
 	"github.com/junyang7/go-common/src/_exception"
-	"github.com/junyang7/go-common/src/_response"
 	"runtime"
 )
 
@@ -42,7 +41,7 @@ func (this *interceptor) Do() {
 	if this.ok {
 		return
 	}
-	response := _response.New()
+	response := _exception.New()
 	response.Code = this.code
 	response.Message = this.message
 	response.Data = this.data
