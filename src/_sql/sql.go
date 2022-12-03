@@ -33,7 +33,7 @@ type Cluster struct {
 	Slaver *Group `json:"slaver"`
 }
 
-type Database struct {
+type Conf struct {
 	Count   int        `json:"count"`
 	Cluster []*Cluster `json:"cluster"`
 }
@@ -61,11 +61,11 @@ type Sql struct {
 	dsn           string
 }
 
-var sqlConf = map[string]*Database{}
+var sqlConf = map[string]*Conf{}
 var sqlPool = map[string]*sql.DB{}
 
-func Initialize(database map[string]*Database) {
-	sqlConf = database
+func Initialize(conf map[string]*Conf) {
+	sqlConf = conf
 	for _, cluster := range sqlConf {
 		for _, group := range cluster.Cluster {
 			for _, connection := range group.Master.Connection {
