@@ -7,41 +7,41 @@ func Empty(value interface{}) bool {
 	case string:
 		return "" == strings.TrimSpace(value.(string))
 	case int8:
-		return value.(int8) > 0
+		return 0 == value.(int8)
 	case int16:
-		return value.(int16) > 0
+		return 0 == value.(int16)
 	case int32:
-		return value.(int32) > 0
+		return 0 == value.(int32)
 	case int64:
-		return value.(int64) > 0
+		return 0 == value.(int64)
 	case int:
-		return value.(int) > 0
+		return 0 == value.(int)
 	case uint8:
-		return value.(uint8) > 0
+		return 0 == value.(uint8)
 	case uint16:
-		return value.(uint16) > 0
+		return 0 == value.(uint16)
 	case uint32:
-		return value.(uint32) > 0
+		return 0 == value.(uint32)
 	case uint64:
-		return value.(uint64) > 0
+		return 0 == value.(uint64)
 	case float32:
-		return value.(float32) > 0
+		return 0 == value.(float32)
 	case float64:
-		return value.(float64) > 0
+		return 0 == value.(float64)
 	case bool:
-		return value.(bool)
+		return false == value.(bool)
 	case []byte:
-		return len(value.([]byte)) > 0
+		return 0 == len(value.([]byte))
 	case map[string]string:
-		return len(value.(map[string]string)) > 0
+		return 0 == len(value.(map[string]string))
 	case []map[string]string:
-		return len(value.([]map[string]string)) > 0
+		return 0 == len(value.([]map[string]string))
 	case [][]map[string]string:
-		return len(value.([][]map[string]string)) > 0
+		return 0 == len(value.([][]map[string]string))
 	case []map[string]interface{}:
-		return len(value.([]map[string]interface{})) > 0
+		return 0 == len(value.([]map[string]interface{}))
 	case [][]map[string]interface{}:
-		return len(value.([][]map[string]interface{})) > 0
+		return 0 == len(value.([][]map[string]interface{}))
 	default:
 		return false
 	}
