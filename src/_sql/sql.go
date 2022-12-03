@@ -367,7 +367,7 @@ func (this *Sql) query() []map[string]string {
 
 }
 
-func (this *Sql) Add(row map[string]interface{}) int64 {
+func (this *Sql) Add(row map[string]interface{}) int {
 	this.master = true
 	this.rowList = []map[string]interface{}{row}
 	this.buildAddList()
@@ -376,9 +376,9 @@ func (this *Sql) Add(row map[string]interface{}) int64 {
 	if err != nil {
 		panic(err)
 	}
-	return lastInsertId
+	return _as.Int(lastInsertId)
 }
-func (this *Sql) AddList(rowList []map[string]interface{}) int64 {
+func (this *Sql) AddList(rowList []map[string]interface{}) int {
 	this.master = true
 	this.rowList = rowList
 	this.buildAddList()
@@ -387,9 +387,9 @@ func (this *Sql) AddList(rowList []map[string]interface{}) int64 {
 	if err != nil {
 		panic(err)
 	}
-	return lastInsertId
+	return _as.Int(lastInsertId)
 }
-func (this *Sql) Del() int64 {
+func (this *Sql) Del() int {
 	this.master = true
 	this.buildDel()
 	res := this.execute()
@@ -397,9 +397,9 @@ func (this *Sql) Del() int64 {
 	if err != nil {
 		panic(err)
 	}
-	return effectedRowCount
+	return _as.Int(effectedRowCount)
 }
-func (this *Sql) Set(row map[string]interface{}) int64 {
+func (this *Sql) Set(row map[string]interface{}) int {
 	this.master = true
 	this.row = row
 	this.buildSet()
@@ -408,7 +408,7 @@ func (this *Sql) Set(row map[string]interface{}) int64 {
 	if err != nil {
 		panic(err)
 	}
-	return effectedRowCount
+	return _as.Int(effectedRowCount)
 }
 func (this *Sql) Get() map[string]string {
 	this.limit = 1
@@ -424,16 +424,16 @@ func (this *Sql) GetList() []map[string]string {
 	this.buildGetList()
 	return this.query()
 }
-func (this *Sql) Count() int64 {
+func (this *Sql) Count() int {
 	this.buildCount()
-	return _as.Int64(this.query()[0]["c"])
+	return _as.Int(this.query()[0]["c"])
 }
 func (this *Sql) Exists() bool {
 	this.buildExists()
 	res := this.query()[0]["c"]
 	return _as.Int64(res) > 0
 }
-func (this *Sql) Execute(sql string, add bool) int64 {
+func (this *Sql) Execute(sql string, add bool) int {
 	this.master = true
 	this.sql = sql
 	res := this.execute()
@@ -442,13 +442,13 @@ func (this *Sql) Execute(sql string, add bool) int64 {
 		if err != nil {
 			panic(err)
 		}
-		return lastInsertId
+		return _as.Int(lastInsertId)
 	}
 	effectedRowCount, err := res.RowsAffected()
 	if err != nil {
 		panic(err)
 	}
-	return effectedRowCount
+	return _as.Int(effectedRowCount)
 }
 func (this *Sql) Query(sql string) []map[string]string {
 	this.sql = sql
