@@ -1,6 +1,7 @@
 package _interceptor
 
 import (
+	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_exception"
 	"runtime"
 )
@@ -32,9 +33,9 @@ func (this *interceptor) Data(data interface{}) *interceptor {
 	this.data = data
 	return this
 }
-func (this *interceptor) Exception(exception _exception.Exception) *interceptor {
-	this.code = exception.Code
-	this.message = exception.Message
+func (this *interceptor) Exception(codeMessage *_codeMessage.CodeMessage) *interceptor {
+	this.code = codeMessage.Code
+	this.message = codeMessage.Message
 	return this
 }
 func (this *interceptor) Do() {
