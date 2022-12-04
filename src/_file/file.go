@@ -23,7 +23,7 @@ func Open(path string, flag int, perm os.FileMode) *File {
 		lock: &sync.Mutex{},
 	}
 	file, err := os.OpenFile(path, flag, perm)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsOpenFile).
 		Message(err.Error()).
 		Do()
@@ -37,7 +37,7 @@ func (this *File) Close() {
 		return
 	}
 	err := this.F.Close()
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileClose).
 		Message(err.Error()).
 		Do()
@@ -67,21 +67,21 @@ func Copy(sourceFilepath string, targetFilePath string) {
 	n := Open(targetFilePath, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	defer n.Close()
 	_, err := io.Copy(n.F, o.F)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsIoCopy).
 		Message(err.Error()).
 		Do()
 }
 func Create(path string) {
 	_, err := os.Create(path)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsCreate).
 		Message(err.Error()).
 		Do()
 }
 func Delete(path string) {
 	err := os.RemoveAll(path)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsRemoveAll).
 		Message(err.Error()).
 		Do()
@@ -97,12 +97,12 @@ func (this *File) Read() []byte {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 	_, err := this.F.Seek(0, 0)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileSeek).
 		Message(err.Error()).
 		Do()
 	b, err := ioutil.ReadAll(this.F)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrIoUtilReadAll).
 		Message(err.Error()).
 		Do()
@@ -110,7 +110,7 @@ func (this *File) Read() []byte {
 }
 func Read(filepath string) []byte {
 	b, err := os.ReadFile(filepath)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsReadFile).
 		Message(err.Error()).
 		Do()
@@ -130,7 +130,7 @@ func ReadAsString(filepath string) string {
 }
 func Rename(old string, new string) {
 	err := os.Rename(old, new)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsRename).
 		Message(err.Error()).
 		Do()
@@ -142,7 +142,7 @@ func (this *File) WriteOffset(content interface{}, offset int64) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 	_, err := this.F.WriteAt([]byte(_as.String(content)), offset)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileWriteAt).
 		Message(err.Error()).
 		Do()

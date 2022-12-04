@@ -28,7 +28,7 @@ func NewReader(path string) *reader {
 }
 func (this *reader) Read() []string {
 	row, err := this.r.Read()
-	_interceptor.Insure(nil != err && io.EOF != err).
+	_interceptor.Insure(nil == err || io.EOF == err).
 		CodeMessage(_codeMessage.ErrCsvNewReaderRead).
 		Message(err.Error()).
 		Do()
@@ -36,7 +36,7 @@ func (this *reader) Read() []string {
 }
 func (this *reader) ReadAll() [][]string {
 	rowList, err := this.r.ReadAll()
-	_interceptor.Insure(nil != err && io.EOF != err).
+	_interceptor.Insure(nil == err || io.EOF == err).
 		CodeMessage(_codeMessage.ErrCsvNewReaderReadAll).
 		Message(err.Error()).
 		Do()
@@ -44,7 +44,7 @@ func (this *reader) ReadAll() [][]string {
 }
 func (this *reader) Close() {
 	err := this.f.Close()
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileClose).
 		Message(err.Error()).
 		Do()
@@ -88,7 +88,7 @@ func (this *writer) WriteAll(rowList [][]interface{}) *writer {
 func (this *writer) Close() {
 	this.w.Flush()
 	err := this.f.Close()
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileClose).
 		Message(err.Error()).
 		Do()

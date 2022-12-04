@@ -19,7 +19,7 @@ func Open(file *os.File, offset int64, size int, prot int, flag int) *Mmap {
 		panic(err)
 	}
 	data, err := syscall.Mmap(int(file.Fd()), offset, size, prot, flag)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrSyscallMmap).
 		Message(err.Error()).
 		Do()
@@ -36,14 +36,14 @@ func (this *Mmap) Append(b []byte) {
 }
 func (this *Mmap) Flush(ms int) {
 	_, _, err := syscall.Syscall(syscall.SYS_MSYNC, uintptr(unsafe.Pointer(&this.data[0])), uintptr(this.offset), uintptr(ms))
-	_interceptor.Insure(0 != err).
+	_interceptor.Insure(0 == err).
 		CodeMessage(_codeMessage.ErrSyscallSyscall).
 		Message(err.Error()).
 		Do()
 }
 func (this *Mmap) Close() {
 	err := syscall.Munmap(this.data)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrSyscallMunmap).
 		Message(err.Error()).
 		Do()

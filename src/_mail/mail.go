@@ -51,7 +51,7 @@ func (this *mail) Send() {
 	}
 	d := gomail.NewDialer(this.host, this.port, this.username, this.password)
 	err := d.DialAndSend(m)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrGoMailDialerDialAndSend).
 		Message(err.Error()).
 		Do()

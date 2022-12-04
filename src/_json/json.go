@@ -9,7 +9,7 @@ import (
 
 func Encode(data interface{}) []byte {
 	b, err := json.Marshal(data)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrJsonMarshal).
 		Message(err.Error()).
 		Do()
@@ -20,7 +20,7 @@ func EncodeAsString(data interface{}) string {
 }
 func Decode(source []byte, target interface{}) {
 	err := json.Unmarshal(source, target)
-	_interceptor.Insure(nil != err).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrJsonUnmarshal).
 		Message(err.Error()).
 		Do()

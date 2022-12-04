@@ -34,7 +34,7 @@ type engine struct {
 func Initialize(conf *Conf) {
 	this := &engine{conf: conf}
 	err := http.ListenAndServe(this.conf.Ip+":"+this.conf.Port, this)
-	_interceptor.Insure(nil != err).Do()
+	_interceptor.Insure(nil == err).Do()
 }
 
 func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
