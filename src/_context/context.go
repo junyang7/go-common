@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
+	"github.com/junyang7/go-common/src/_is"
 	"github.com/junyang7/go-common/src/_parameter"
 	"github.com/junyang7/go-common/src/_render"
+	"github.com/junyang7/go-common/src/_response"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -153,7 +155,11 @@ func (this *Context) File(name string) *multipart.FileHeader {
 }
 
 func (this *Context) Json(value interface{}) {
-	_render.New(this.W, this.R).Json(value)
+	res := _response.New()
+	if _is.NotEmpty(value) {
+		res.Data = value
+	}
+	_render.New(this.W, this.R).Json(res)
 }
 func (this *Context) Text(value interface{}) {
 	_render.New(this.W, this.R).Text(value)

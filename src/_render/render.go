@@ -18,14 +18,10 @@ func New(w http.ResponseWriter, r *http.Request) *render {
 		r: r,
 	}
 }
-func (this *render) Json(value interface{}) {
-	res := _response.New()
-	if _is.NotEmpty(value) {
-		res.Data = value
-	}
+func (this *render) Json(response *_response.Response) {
 	this.w.Header().Set("content-type", "application/json")
 	e := json.NewEncoder(this.w)
-	_ = e.Encode(res)
+	_ = e.Encode(response)
 }
 func (this *render) Text(value interface{}) {
 	res := _response.New()
