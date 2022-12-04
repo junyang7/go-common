@@ -2,26 +2,30 @@ package _validator
 
 import "github.com/junyang7/go-common/src/_as"
 
-type validator struct {
+type Validator struct {
 	name  string
-	value string
+	value interface{}
 }
 
-func New(name string, value string) *validator {
-	return &validator{
+func New(name string, value interface{}) *Validator {
+	return &Validator{
 		name:  name,
 		value: value,
 	}
 }
-func (this *validator) Int() int {
+func (this *Validator) Default(value interface{}) *Validator {
+	this.value = value
+	return this
+}
+func (this *Validator) Int() int {
 	return _as.Int(this.value)
 }
-func (this *validator) String() string {
+func (this *Validator) String() string {
 	return _as.String(this.value)
 }
-func (this *validator) Bool() bool {
+func (this *Validator) Bool() bool {
 	return _as.Bool(this.value)
 }
-func (this *validator) Float64() float64 {
+func (this *Validator) Float64() float64 {
 	return _as.Float64(this.value)
 }
