@@ -80,7 +80,7 @@ func (this *processor) checkMethod() {
 
 }
 func (this *processor) checkOrigin() {
-	origin := this.ctx.Server("origin").String()
+	origin := this.ctx.Server("origin").String().Value()
 	matchedList := regexp.MustCompile("(\\S+)://([^:]+):?(\\d+)?").FindStringSubmatch(strings.Trim(origin, "/"))
 	if 0 == len(matchedList) {
 		return
@@ -98,7 +98,7 @@ func (this *processor) checkOrigin() {
 	panic("跨域阻止")
 }
 func (this *processor) checkRouter() {
-	path := this.ctx.Server("path").String()
+	path := this.ctx.Server("path").String().Value()
 	if router, ok := _router.RouterMap[path]; ok {
 		this.router = router
 		return

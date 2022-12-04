@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
+	"github.com/junyang7/go-common/src/_parameter"
 	"github.com/junyang7/go-common/src/_render"
-	"github.com/junyang7/go-common/src/_validator"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -105,41 +105,41 @@ func (this *Context) prepareServer() {
 	this.server["path"] = this.R.URL.Path
 }
 
-func (this *Context) Get(name string) *_validator.Validator {
+func (this *Context) Get(name string) *_parameter.Parameter {
 	this.prepareGet()
-	return _validator.New(name, this.get[name])
+	return _parameter.New(name, this.get[name])
 }
 func (this *Context) GetAll() map[string]string {
 	this.prepareGet()
 	return this.get
 }
-func (this *Context) Post(name string) *_validator.Validator {
+func (this *Context) Post(name string) *_parameter.Parameter {
 	this.preparePost()
-	return _validator.New(name, this.post[name])
+	return _parameter.New(name, this.post[name])
 }
 func (this *Context) PostAll() map[string]string {
 	this.preparePost()
 	return this.post
 }
-func (this *Context) Request(name string) *_validator.Validator {
+func (this *Context) Request(name string) *_parameter.Parameter {
 	this.prepareRequest()
-	return _validator.New(name, this.request[name])
+	return _parameter.New(name, this.request[name])
 }
 func (this *Context) RequestAll() map[string]string {
 	this.prepareRequest()
 	return this.request
 }
-func (this *Context) Cookie(name string) *_validator.Validator {
+func (this *Context) Cookie(name string) *_parameter.Parameter {
 	this.prepareCookie()
-	return _validator.New(name, this.cookie[name])
+	return _parameter.New(name, this.cookie[name])
 }
 func (this *Context) CookieAll() map[string]string {
 	this.prepareCookie()
 	return this.cookie
 }
-func (this *Context) Server(name string) *_validator.Validator {
+func (this *Context) Server(name string) *_parameter.Parameter {
 	this.prepareServer()
-	return _validator.New(name, this.server[name])
+	return _parameter.New(name, this.server[name])
 }
 func (this *Context) ServerAll() map[string]string {
 	this.prepareServer()
