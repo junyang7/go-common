@@ -4,6 +4,8 @@ import "strings"
 
 func Empty(value interface{}) bool {
 	switch value.(type) {
+	case nil:
+		return true
 	case string:
 		return "" == strings.TrimSpace(value.(string))
 	case int8:
