@@ -33,7 +33,7 @@ func (this *interceptor) Data(data interface{}) *interceptor {
 	this.data = data
 	return this
 }
-func (this *interceptor) Exception(codeMessage *_codeMessage.CodeMessage) *interceptor {
+func (this *interceptor) CodeMessage(codeMessage *_codeMessage.CodeMessage) *interceptor {
 	this.code = codeMessage.Code
 	this.message = codeMessage.Message
 	return this
@@ -42,13 +42,13 @@ func (this *interceptor) Do() {
 	if this.ok {
 		return
 	}
-	response := _exception.New()
-	response.Code = this.code
-	response.Message = this.message
-	response.Data = this.data
+	exception := _exception.New()
+	exception.Code = this.code
+	exception.Message = this.message
+	exception.Data = this.data
 	if _, file, line, ok := runtime.Caller(1); ok {
-		response.File = file
-		response.Line = line
+		exception.File = file
+		exception.Line = line
 	}
-	panic(response)
+	panic(exception)
 }

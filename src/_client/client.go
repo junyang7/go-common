@@ -3,6 +3,8 @@ package _client
 import (
 	"context"
 	"github.com/junyang7/go-common/src/_client/pb"
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"time"
@@ -10,21 +12,22 @@ import (
 
 func Rpc(addr string, header map[string]string, body map[string]string) []byte {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrGrpcDial).
+		Message(err.Error()).
+		Do()
 	defer func(conn *grpc.ClientConn) {
 		_ = conn.Close()
 	}(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	c := pb.NewServiceClient(conn)
-	r, err := c.Call(ctx, &pb.Request{
+	r, err := pb.NewServiceClient(conn).Call(ctx, &pb.Request{
 		Header: header,
 		Body:   body,
 	})
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrPbNewServiceClientCall).
+		Message(err.Error()).
+		Do()
 	return r.GetResponse()
 }

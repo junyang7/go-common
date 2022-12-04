@@ -5,14 +5,17 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"github.com/junyang7/go-common/src/_base64Format"
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
 )
 
 func Encode(data string, k32 string, i16 string) string {
 	b := []byte(data)
 	block, err := aes.NewCipher([]byte(k32))
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrAesNewCipher).
+		Message(err.Error()).
+		Do()
 	size := block.BlockSize()
 	l := size - len(b)%size
 	b = append(b, bytes.Repeat([]byte{byte(l)}, l)...)
@@ -24,9 +27,10 @@ func Encode(data string, k32 string, i16 string) string {
 func Decode(data string, k32 string, i16 string) string {
 	b := []byte(_base64Format.Decode(data))
 	block, err := aes.NewCipher([]byte(k32))
-	if err != nil {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrAesNewCipher).
+		Message(err.Error()).
+		Do()
 	mode := cipher.NewCBCDecrypter(block, []byte(i16))
 	decrypted := make([]byte, len(b))
 	mode.CryptBlocks(decrypted, b)

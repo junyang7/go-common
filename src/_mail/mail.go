@@ -1,6 +1,10 @@
 package _mail
 
-import "gopkg.in/gomail.v2"
+import (
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
+	"gopkg.in/gomail.v2"
+)
 
 type mail struct {
 	host     string
@@ -46,7 +50,9 @@ func (this *mail) Send() {
 		m.Attach(attach)
 	}
 	d := gomail.NewDialer(this.host, this.port, this.username, this.password)
-	if err := d.DialAndSend(m); nil != err {
-		panic(err)
-	}
+	err := d.DialAndSend(m)
+	_interceptor.Insure(nil != err).
+		CodeMessage(_codeMessage.ErrGoMailDialerDialAndSend).
+		Message(err.Error()).
+		Do()
 }

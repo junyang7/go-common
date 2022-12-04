@@ -1,8 +1,9 @@
 package _context
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_render"
 	"github.com/junyang7/go-common/src/_validator"
 	"mime/multipart"
@@ -34,9 +35,11 @@ func (this *Context) preparePost() {
 		return
 	}
 	this.post = map[string]string{}
-	if err := this.R.ParseForm(); nil != err {
-		panic(err)
-	}
+	err := this.R.ParseForm()
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrHttpRequestParseForm).
+		Message(err.Error()).
+		Do()
 	contentType := strings.ToLower(this.R.Header.Get("content-type"))
 	if -1 != strings.Index(contentType, "application/x-www-form-urlencoded") {
 		for k, v := range this.R.PostForm {
@@ -44,21 +47,26 @@ func (this *Context) preparePost() {
 		}
 	}
 	if -1 != strings.Index(contentType, "multipart/form-data") {
-		if err := this.R.ParseMultipartForm(32 << 20); nil != err {
-			panic(err)
-		}
+		err := this.R.ParseMultipartForm(32 << 20)
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrHttpRequestParseMultipartForm).
+			Message(err.Error()).
+			Do()
 		for k, v := range this.R.PostForm {
 			this.post[k] = v[0]
 		}
 	}
 	if -1 != strings.Index(contentType, "application/json") {
 		post := map[string]interface{}{}
-		if err := json.NewDecoder(this.R.Body).Decode(&post); nil != err {
-			panic(err)
-		}
-		if err := this.R.Body.Close(); nil != err {
-			panic(err)
-		}
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrJsonNewDecoderDecode).
+			Message(err.Error()).
+			Do()
+		err := this.R.Body.Close()
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrHttpRequestBodyClose).
+			Message(err.Error()).
+			Do()
 		for k, v := range post {
 			this.post[k] = fmt.Sprintf("%v", v)
 		}

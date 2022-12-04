@@ -1,5 +1,7 @@
 package _exception
 
+import "github.com/junyang7/go-common/src/_codeMessage"
+
 type Exception struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
@@ -13,7 +15,7 @@ type Exception struct {
 
 func New() *Exception {
 	return &Exception{
-		Code:    -1,
-		Message: "failure",
+		Code:    _codeMessage.ErrDefault.Code,
+		Message: _codeMessage.ErrDefault.Message,
 	}
 }

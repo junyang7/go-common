@@ -1,12 +1,17 @@
 package _password
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
+	"golang.org/x/crypto/bcrypt"
+)
 
 func Hash(password string) string {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil != err).
+		CodeMessage(_codeMessage.ErrBcryptGenerateFromPassword).
+		Message(err.Error()).
+		Do()
 	return string(hash)
 }
 

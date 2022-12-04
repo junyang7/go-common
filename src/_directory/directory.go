@@ -1,28 +1,39 @@
 package _directory
 
-import "os"
+import (
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
+	"os"
+)
 
 func Exists(path string) bool {
 	f, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
+	_interceptor.Insure(nil != err).
+		CodeMessage(_codeMessage.ErrOsStat).
+		Message(err.Error()).
+		Do()
 	return f.IsDir()
 }
 func Create(path string) {
 	if !Exists(path) {
-		if err := os.MkdirAll(path, os.ModePerm); err != nil {
-			panic(err)
-		}
+		err := os.MkdirAll(path, os.ModePerm)
+		_interceptor.Insure(nil != err).
+			CodeMessage(_codeMessage.ErrOsMkdirAll).
+			Message(err.Error()).
+			Do()
 	}
 }
 func Delete(path string) {
-	if err := os.RemoveAll(path); nil != err {
-		panic(err)
-	}
+	err := os.RemoveAll(path)
+	_interceptor.Insure(nil != err).
+		CodeMessage(_codeMessage.ErrOsRemoveAll).
+		Message(err.Error()).
+		Do()
 }
 func Rename(old string, new string) {
-	if err := os.Rename(old, new); nil != err {
-		panic(err)
-	}
+	err := os.Rename(old, new)
+	_interceptor.Insure(nil != err).
+		CodeMessage(_codeMessage.ErrOsRename).
+		Message(err.Error()).
+		Do()
 }
