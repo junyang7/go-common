@@ -1,11 +1,10 @@
 package _api
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_exception"
 	"github.com/junyang7/go-common/src/_interceptor"
+	"github.com/junyang7/go-common/src/_render"
 	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_server/_router"
 	"net/http"
@@ -58,8 +57,7 @@ type processor struct {
 func (this *processor) do() {
 	defer func() {
 		if err := recover(); nil != err {
-			fmt.Println(err)
-			this.render(err)
+			this.exception(err)
 		}
 	}()
 	this.checkIp()
@@ -116,7 +114,7 @@ func (this *processor) middlewareAfter() {
 func (this *processor) middlewareBefore() {
 
 }
-func (this *processor) render(err interface{}) {
+func (this *processor) exception(err interface{}) {
 	res := _response.New()
 	switch err.(type) {
 	case *_exception.Exception:
@@ -131,7 +129,5 @@ func (this *processor) render(err interface{}) {
 		res.Code = -1
 		res.Message = "failure"
 	}
-	this.w.Header().Set("content-type", "application/json")
-	e := json.NewEncoder(this.w)
-	_ = e.Encode(res)
+	_render.New(this.w, this.r).Json(res)
 }
