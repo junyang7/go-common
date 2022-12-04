@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/junyang7/go-common/src/_render"
+	"github.com/junyang7/go-common/src/_validator"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -96,56 +97,41 @@ func (this *Context) prepareServer() {
 	this.server["path"] = this.R.URL.Path
 }
 
-func (this *Context) Get(name string) string {
+func (this *Context) Get(name string) *_validator.Validator {
 	this.prepareGet()
-	if value, ok := this.get[name]; ok {
-		return value
-	}
-	return ""
+	return _validator.New(name, this.get[name])
 }
 func (this *Context) GetAll() map[string]string {
 	this.prepareGet()
 	return this.get
 }
-func (this *Context) Post(name string) string {
+func (this *Context) Post(name string) *_validator.Validator {
 	this.preparePost()
-	if value, ok := this.post[name]; ok {
-		return value
-	}
-	return ""
+	return _validator.New(name, this.post[name])
 }
 func (this *Context) PostAll() map[string]string {
 	this.preparePost()
 	return this.post
 }
-func (this *Context) Request(name string) string {
+func (this *Context) Request(name string) *_validator.Validator {
 	this.prepareRequest()
-	if value, ok := this.request[name]; ok {
-		return value
-	}
-	return ""
+	return _validator.New(name, this.request[name])
 }
 func (this *Context) RequestAll() map[string]string {
 	this.prepareRequest()
 	return this.request
 }
-func (this *Context) Cookie(name string) string {
+func (this *Context) Cookie(name string) *_validator.Validator {
 	this.prepareCookie()
-	if value, ok := this.cookie[name]; ok {
-		return value
-	}
-	return ""
+	return _validator.New(name, this.cookie[name])
 }
 func (this *Context) CookieAll() map[string]string {
 	this.prepareCookie()
 	return this.cookie
 }
-func (this *Context) Server(name string) string {
+func (this *Context) Server(name string) *_validator.Validator {
 	this.prepareServer()
-	if value, ok := this.server[name]; ok {
-		return value
-	}
-	return ""
+	return _validator.New(name, this.server[name])
 }
 func (this *Context) ServerAll() map[string]string {
 	this.prepareServer()
