@@ -12,7 +12,7 @@ func Execute(name string, arg ...string) []byte {
 	b, err := cmd.Output()
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrCmdOutput).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return b
 }

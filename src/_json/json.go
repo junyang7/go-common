@@ -11,7 +11,7 @@ func Encode(data interface{}) []byte {
 	b, err := json.Marshal(data)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrJsonMarshal).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return b
 }
@@ -22,6 +22,6 @@ func Decode(source []byte, target interface{}) {
 	err := json.Unmarshal(source, target)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrJsonUnmarshal).
-		Message(err.Error()).
+		Message(err).
 		Do()
 }

@@ -10,7 +10,7 @@ func Hash(password string) string {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrBcryptGenerateFromPassword).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return string(hash)
 }

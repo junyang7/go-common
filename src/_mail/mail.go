@@ -53,6 +53,6 @@ func (this *mail) Send() {
 	err := d.DialAndSend(m)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrGoMailDialerDialAndSend).
-		Message(err.Error()).
+		Message(err).
 		Do()
 }

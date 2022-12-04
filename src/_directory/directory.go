@@ -10,7 +10,7 @@ func Exists(path string) bool {
 	f, err := os.Stat(path)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsStat).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return f.IsDir()
 }
@@ -19,7 +19,7 @@ func Create(path string) {
 		err := os.MkdirAll(path, os.ModePerm)
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrOsMkdirAll).
-			Message(err.Error()).
+			Message(err).
 			Do()
 	}
 }
@@ -27,13 +27,13 @@ func Delete(path string) {
 	err := os.RemoveAll(path)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsRemoveAll).
-		Message(err.Error()).
+		Message(err).
 		Do()
 }
 func Rename(old string, new string) {
 	err := os.Rename(old, new)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsRename).
-		Message(err.Error()).
+		Message(err).
 		Do()
 }

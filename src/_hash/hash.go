@@ -15,7 +15,7 @@ func Md5(data string) string {
 	_, err := hash.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return hex.EncodeToString(hash.Sum(nil))
 }
@@ -24,7 +24,7 @@ func Sha1(data string) string {
 	_, err := hash.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return hex.EncodeToString(hash.Sum(nil))
 }
@@ -33,7 +33,7 @@ func Sha256(data string) string {
 	_, err := hash.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return hex.EncodeToString(hash.Sum(nil))
 }
@@ -42,7 +42,7 @@ func Sha512(data string) string {
 	_, err := hash.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return hex.EncodeToString(hash.Sum(nil))
 }

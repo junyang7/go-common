@@ -14,7 +14,7 @@ func Rpc(addr string, header map[string]string, body map[string]string) []byte {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrGrpcDial).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	defer func(conn *grpc.ClientConn) {
 		_ = conn.Close()
@@ -27,7 +27,7 @@ func Rpc(addr string, header map[string]string, body map[string]string) []byte {
 	})
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrPbNewServiceClientCall).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return r.GetResponse()
 }

@@ -1,6 +1,7 @@
 package _interceptor
 
 import (
+	"fmt"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_exception"
 	"runtime"
@@ -25,8 +26,8 @@ func (this *interceptor) Code(code int) *interceptor {
 	this.code = code
 	return this
 }
-func (this *interceptor) Message(message string) *interceptor {
-	this.message = message
+func (this *interceptor) Message(message interface{}) *interceptor {
+	this.message = fmt.Sprintf("%v", message)
 	return this
 }
 func (this *interceptor) Data(data interface{}) *interceptor {

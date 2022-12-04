@@ -38,7 +38,7 @@ func (this *Context) preparePost() {
 	err := this.R.ParseForm()
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHttpRequestParseForm).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	contentType := strings.ToLower(this.R.Header.Get("content-type"))
 	if -1 != strings.Index(contentType, "application/x-www-form-urlencoded") {
@@ -50,7 +50,7 @@ func (this *Context) preparePost() {
 		err := this.R.ParseMultipartForm(32 << 20)
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrHttpRequestParseMultipartForm).
-			Message(err.Error()).
+			Message(err).
 			Do()
 		for k, v := range this.R.PostForm {
 			this.post[k] = v[0]
@@ -60,12 +60,12 @@ func (this *Context) preparePost() {
 		post := map[string]interface{}{}
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrJsonNewDecoderDecode).
-			Message(err.Error()).
+			Message(err).
 			Do()
 		err := this.R.Body.Close()
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrHttpRequestBodyClose).
-			Message(err.Error()).
+			Message(err).
 			Do()
 		for k, v := range post {
 			this.post[k] = fmt.Sprintf("%v", v)

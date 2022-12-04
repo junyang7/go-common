@@ -14,7 +14,7 @@ func Encode(data string, k32 string, i16 string) string {
 	block, err := aes.NewCipher([]byte(k32))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrAesNewCipher).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	size := block.BlockSize()
 	l := size - len(b)%size
@@ -29,7 +29,7 @@ func Decode(data string, k32 string, i16 string) string {
 	block, err := aes.NewCipher([]byte(k32))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrAesNewCipher).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	mode := cipher.NewCBCDecrypter(block, []byte(i16))
 	decrypted := make([]byte, len(b))

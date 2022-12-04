@@ -18,7 +18,7 @@ func NewReader(path string) *reader {
 	f, err := os.Open(path)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsOpen).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	r := csv.NewReader(f)
 	return &reader{
@@ -30,7 +30,7 @@ func (this *reader) Read() []string {
 	row, err := this.r.Read()
 	_interceptor.Insure(nil == err || io.EOF == err).
 		CodeMessage(_codeMessage.ErrCsvNewReaderRead).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return row
 }
@@ -38,7 +38,7 @@ func (this *reader) ReadAll() [][]string {
 	rowList, err := this.r.ReadAll()
 	_interceptor.Insure(nil == err || io.EOF == err).
 		CodeMessage(_codeMessage.ErrCsvNewReaderReadAll).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return rowList
 }
@@ -46,7 +46,7 @@ func (this *reader) Close() {
 	err := this.f.Close()
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileClose).
-		Message(err.Error()).
+		Message(err).
 		Do()
 }
 
@@ -59,7 +59,7 @@ func NewWriter(path string) *writer {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0777)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsOpenFile).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	w := csv.NewWriter(f)
 	return &writer{
@@ -75,7 +75,7 @@ func (this *writer) Write(row []interface{}) *writer {
 	err := this.w.Write(rowNew)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrCsvNewWriterWrite).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return this
 }
@@ -90,6 +90,6 @@ func (this *writer) Close() {
 	err := this.f.Close()
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrOsFileClose).
-		Message(err.Error()).
+		Message(err).
 		Do()
 }

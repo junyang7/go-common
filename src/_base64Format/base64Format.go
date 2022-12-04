@@ -14,7 +14,7 @@ func Decode(data string) string {
 	b, err := base64.RawURLEncoding.DecodeString(data)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrBase64RawURLEncodingDecodeString).
-		Message(err.Error()).
+		Message(err).
 		Do()
 	return _as.String(b)
 }
