@@ -3,8 +3,7 @@ package _context
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/junyang7/go-common/src/_is"
-	"github.com/junyang7/go-common/src/_response"
+	"github.com/junyang7/go-common/src/_render"
 	"mime/multipart"
 	"net/http"
 	"strings"
@@ -159,17 +158,9 @@ func (this *Context) File(name string) *multipart.FileHeader {
 	return nil
 }
 
-func (this *Context) Json(data interface{}) {
-	res := _response.New()
-	if _is.NotEmpty(data) {
-		res.Data = data
-	}
-	this.W.Header().Set("content-type", "application/json")
-	e := json.NewEncoder(this.W)
-	_ = e.Encode(res)
+func (this *Context) Json(value interface{}) {
+	_render.New(this.W, this.R).Json(value)
 }
-func (this *Context) String(data interface{}) {
-	this.W.Header().Set("content-type", "application/text")
-	e := json.NewEncoder(this.W)
-	_ = e.Encode(data)
+func (this *Context) Text(value interface{}) {
+	_render.New(this.W, this.R).Text(value)
 }
