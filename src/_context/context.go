@@ -2,6 +2,7 @@ package _context
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/junyang7/go-common/src/_response"
 	"mime/multipart"
 	"net/http"
@@ -50,11 +51,15 @@ func (this *Context) preparePost() {
 		}
 	}
 	if -1 != strings.Index(contentType, "application/json") {
-		if err := json.NewDecoder(this.R.Body).Decode(&this.post); nil != err {
+		post := map[string]interface{}{}
+		if err := json.NewDecoder(this.R.Body).Decode(&post); nil != err {
 			panic(err)
 		}
 		if err := this.R.Body.Close(); nil != err {
 			panic(err)
+		}
+		for k, v := range post {
+			this.post[k] = fmt.Sprintf("%v", v)
 		}
 	}
 }
