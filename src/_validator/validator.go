@@ -1,6 +1,9 @@
 package _validator
 
-import "github.com/junyang7/go-common/src/_as"
+import (
+	"github.com/junyang7/go-common/src/_as"
+	"github.com/junyang7/go-common/src/_is"
+)
 
 type Validator struct {
 	name  string
@@ -14,7 +17,9 @@ func New(name string, value interface{}) *Validator {
 	}
 }
 func (this *Validator) Default(value interface{}) *Validator {
-	this.value = value
+	if _is.Empty(this.value) {
+		this.value = value
+	}
 	return this
 }
 func (this *Validator) Int() int {
