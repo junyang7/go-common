@@ -21,6 +21,12 @@ func NewInt(name string, value interface{}) *Int {
 		codeMessage: _codeMessage.ErrParameter,
 	}
 }
+func (this *Int) Default(value int) *Int {
+	if _is.Empty(this.value) {
+		this.value = value
+	}
+	return this
+}
 func (this *Int) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Int {
 	this.codeMessage = codeMessage
 	return this
@@ -62,6 +68,12 @@ func NewString(name string, value interface{}) *String {
 		value:       strings.TrimSpace(_as.String(value)),
 		codeMessage: _codeMessage.ErrParameter,
 	}
+}
+func (this *String) Default(value string) *String {
+	if _is.Empty(this.value) {
+		this.value = value
+	}
+	return this
 }
 func (this *String) CodeMessage(codeMessage *_codeMessage.CodeMessage) *String {
 	this.codeMessage = codeMessage
@@ -105,6 +117,12 @@ func NewBool(name string, value interface{}) *Bool {
 		codeMessage: _codeMessage.ErrParameter,
 	}
 }
+func (this *Bool) Default(value bool) *Bool {
+	if _is.Empty(this.value) {
+		this.value = value
+	}
+	return this
+}
 func (this *Bool) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Bool {
 	this.codeMessage = codeMessage
 	return this
@@ -125,6 +143,12 @@ func NewFloat64(name string, value interface{}) *Float64 {
 		value:       _as.Float64(value),
 		codeMessage: _codeMessage.ErrParameter,
 	}
+}
+func (this *Float64) Default(value float64) *Float64 {
+	if _is.Empty(this.value) {
+		this.value = value
+	}
+	return this
 }
 func (this *Float64) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Float64 {
 	this.codeMessage = codeMessage
