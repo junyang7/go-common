@@ -9,6 +9,8 @@ type Response struct {
 	Time    int64       `json:"time"`
 	Consume int64       `json:"consume"`
 	Trace   string      `json:"trace"`
+	File    string      `json:"file,omitempty"`
+	Line    int         `json:"line,omitempty"`
 }
 
 func New() *Response {

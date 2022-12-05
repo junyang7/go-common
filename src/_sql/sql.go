@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/junyang7/go-common/src/_as"
+	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_map"
 	"github.com/junyang7/go-common/src/_slice"
@@ -88,9 +89,10 @@ func openAndSaveToPool(connection *Connection) {
 		return
 	}
 	p, err := sql.Open(connection.Driver, dsn)
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlOpen).
+		Message(err).
+		Do()
 	p.SetMaxOpenConns(50)
 	p.SetConnMaxIdleTime(50)
 	p.SetConnMaxLifetime(1 * time.Hour)
@@ -213,11 +215,11 @@ func (this *Sql) getPool() *sql.DB {
 		}
 		database, ok := sqlConf[this.baseDatabase]
 		_interceptor.Insure(ok).
-			Message("数据库配置不存在").
+			CodeMessage(_codeMessage.ErrMapKeyNotExists).
 			Data(map[string]interface{}{"database": this.baseDatabase}).
 			Do()
 		_interceptor.Insure(this.databaseIndex < database.Count).
-			Message("数据库配置不存在").
+			CodeMessage(_codeMessage.ErrSliceOutOfIndex).
 			Data(map[string]interface{}{"database": this.baseDatabase, "index": this.databaseIndex}).
 			Do()
 		cluster := database.Cluster[this.databaseIndex]
@@ -308,14 +310,18 @@ func (this *Sql) execute() sql.Result {
 		res, err := this.tx.Exec(this.sql, this.getParameter()...)
 		if err != nil {
 			this.Rollback()
-			panic(err)
+			_interceptor.Insure(false).
+				CodeMessage(_codeMessage.ErrSqlTxExec).
+				Message(err).
+				Do()
 		}
 		return res
 	}
 	res, err := this.getPool().Exec(this.sql, this.getParameter()...)
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlDBExec).
+		Message(err).
+		Do()
 	return res
 }
 func (this *Sql) query() []map[string]string {
@@ -327,26 +333,32 @@ func (this *Sql) query() []map[string]string {
 		rowList, err = this.tx.Query(this.sql, this.getParameter()...)
 		if err != nil {
 			this.Rollback()
-			panic(err)
+			_interceptor.Insure(false).
+				CodeMessage(_codeMessage.ErrSqlTxQuery).
+				Message(err).
+				Do()
 		}
 	} else {
 		rowList, err = this.getPool().Query(this.sql, this.getParameter()...)
-		if nil != err {
-			panic(err)
-		}
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrSqlDBQuery).
+			Message(err).
+			Do()
 	}
 
 	defer func() {
 		err := rowList.Close()
-		if nil != err {
-			panic(err)
-		}
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrSqlRowsClose).
+			Message(err).
+			Do()
 	}()
 
 	fieldList, err := rowList.Columns()
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlRowsColumns).
+		Message(err).
+		Do()
 	dest := make([]interface{}, len(fieldList))
 	for i, _ := range dest {
 		dest[i] = new(sql.RawBytes)
@@ -354,9 +366,10 @@ func (this *Sql) query() []map[string]string {
 	res := make([]map[string]string, 0)
 	for rowList.Next() {
 		err := rowList.Scan(dest...)
-		if nil != err {
-			panic(err)
-		}
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrSqlRowsScan).
+			Message(err).
+			Do()
 		row := make(map[string]string)
 		for i, value := range dest {
 			row[fieldList[i]] = string(*(value.(interface{}).(*sql.RawBytes)))
@@ -373,9 +386,10 @@ func (this *Sql) Add(row map[string]interface{}) int {
 	this.buildAddList()
 	res := this.execute()
 	lastInsertId, err := res.LastInsertId()
-	if err != nil {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlResultLastInsertId).
+		Message(err).
+		Do()
 	return _as.Int(lastInsertId)
 }
 func (this *Sql) AddList(rowList []map[string]interface{}) int {
@@ -384,9 +398,10 @@ func (this *Sql) AddList(rowList []map[string]interface{}) int {
 	this.buildAddList()
 	res := this.execute()
 	lastInsertId, err := res.LastInsertId()
-	if err != nil {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlResultLastInsertId).
+		Message(err).
+		Do()
 	return _as.Int(lastInsertId)
 }
 func (this *Sql) Del() int {
@@ -394,9 +409,10 @@ func (this *Sql) Del() int {
 	this.buildDel()
 	res := this.execute()
 	effectedRowCount, err := res.RowsAffected()
-	if err != nil {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlResultRowsAffected).
+		Message(err).
+		Do()
 	return _as.Int(effectedRowCount)
 }
 func (this *Sql) Set(row map[string]interface{}) int {
@@ -405,9 +421,10 @@ func (this *Sql) Set(row map[string]interface{}) int {
 	this.buildSet()
 	res := this.execute()
 	effectedRowCount, err := res.RowsAffected()
-	if err != nil {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlResultRowsAffected).
+		Message(err).
+		Do()
 	return _as.Int(effectedRowCount)
 }
 func (this *Sql) Get() map[string]string {
@@ -439,15 +456,17 @@ func (this *Sql) Execute(sql string, add bool) int {
 	res := this.execute()
 	if add {
 		lastInsertId, err := res.LastInsertId()
-		if err != nil {
-			panic(err)
-		}
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrSqlResultLastInsertId).
+			Message(err).
+			Do()
 		return _as.Int(lastInsertId)
 	}
 	effectedRowCount, err := res.RowsAffected()
-	if err != nil {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlResultRowsAffected).
+		Message(err).
+		Do()
 	return _as.Int(effectedRowCount)
 }
 func (this *Sql) Query(sql string) []map[string]string {
@@ -456,23 +475,29 @@ func (this *Sql) Query(sql string) []map[string]string {
 }
 func (this *Sql) Begin() *Sql {
 	tx, err := this.getPool().Begin()
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrSqlDBBegin).
+		Message(err).
+		Do()
 	this.tx = tx
 	return this
 }
 func (this *Sql) Commit() *Sql {
 	if err := this.tx.Commit(); nil != err {
 		this.Rollback()
-		panic(err)
+		_interceptor.Insure(false).
+			CodeMessage(_codeMessage.ErrSqlTxCommit).
+			Message(err).
+			Do()
 	}
 	return this
 }
 func (this *Sql) Rollback() *Sql {
-	if err := this.tx.Rollback(); nil != err {
-		panic(err)
-	}
+	err := this.tx.Rollback()
+	_interceptor.Insure(false).
+		CodeMessage(_codeMessage.ErrSqlTxRollback).
+		Message(err).
+		Do()
 	return this
 }
 func (this *Sql) Tx(rd *Sql) *Sql {

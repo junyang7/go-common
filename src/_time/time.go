@@ -1,6 +1,10 @@
 package _time
 
-import "time"
+import (
+	"github.com/junyang7/go-common/src/_codeMessage"
+	"github.com/junyang7/go-common/src/_interceptor"
+	"time"
+)
 
 const (
 	YEAR        = "2006"
@@ -20,9 +24,10 @@ func GetByTimeAndFormat(t time.Time, f string) string {
 }
 func GetByFormatAndString(f string, s string) time.Time {
 	t, err := time.ParseInLocation(f, s, time.Local)
-	if nil != err {
-		panic(err)
-	}
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrTimeParseInLocation).
+		Message(err).
+		Do()
 	return t
 }
 func GetByFormat(f string) string {

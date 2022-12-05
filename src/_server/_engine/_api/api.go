@@ -1,6 +1,7 @@
 package _api
 
 import (
+	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_exception"
 	"github.com/junyang7/go-common/src/_interceptor"
@@ -34,7 +35,7 @@ type engine struct {
 func Initialize(conf *Conf) {
 	this := &engine{conf: conf}
 	err := http.ListenAndServe(this.conf.Ip+":"+this.conf.Port, this)
-	_interceptor.Insure(nil == err).Do()
+	panic(err)
 }
 
 func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +96,10 @@ func (this *processor) checkOrigin() {
 			return
 		}
 	}
-	panic("跨域阻止")
+	_interceptor.Insure(false).
+		CodeMessage(_codeMessage.ErrAccessControlAllowOrigin).
+		Data(map[string]interface{}{"origin": origin}).
+		Do()
 }
 func (this *processor) checkRouter() {
 	path := this.ctx.Server("path").String().Value()
@@ -103,7 +107,10 @@ func (this *processor) checkRouter() {
 		this.router = router
 		return
 	}
-	panic("资源不存在")
+	_interceptor.Insure(false).
+		CodeMessage(_codeMessage.ErrResourceNotExists).
+		Data(map[string]interface{}{"path": path}).
+		Do()
 }
 func (this *processor) checkRouterMethod() {
 
@@ -122,6 +129,8 @@ func (this *processor) exception(err interface{}) {
 		res.Code = err.Code
 		res.Message = err.Message
 		res.Data = err.Data
+		res.File = err.File
+		res.Line = err.Line
 	case string:
 		res.Code = -1
 		res.Message = err.(string)

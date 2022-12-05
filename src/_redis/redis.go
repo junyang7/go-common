@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/junyang7/go-common/src/_as"
+	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"math/rand"
 	"time"
@@ -37,19 +38,19 @@ func Initialize(conf map[string]*Conf) {
 	redisConf = conf
 	for _, cluster := range conf {
 		for _, group := range cluster.Cluster {
-			for _, machine := range group.Master.Connection {
-				openAndSaveToPool(machine)
+			for _, connection := range group.Master.Connection {
+				openAndSaveToPool(connection)
 			}
-			for _, machine := range group.Slaver.Connection {
-				openAndSaveToPool(machine)
+			for _, connection := range group.Slaver.Connection {
+				openAndSaveToPool(connection)
 			}
 		}
 	}
 }
 
 func openAndSaveToPool(connection *Connection) {
-	uk := getUk(connection)
-	if _, ok := redisPool[uk]; ok {
+	dsn := getDsn(connection)
+	if _, ok := redisPool[dsn]; ok {
 		return
 	}
 	p := redis.NewClient(&redis.Options{
@@ -58,13 +59,10 @@ func openAndSaveToPool(connection *Connection) {
 		Username: connection.Username,
 		Password: connection.Password,
 	})
-	redisPool[uk] = p
+	redisPool[dsn] = p
 }
 func getDsn(connection *Connection) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", connection.Username, connection.Password, connection.Host, connection.Port, connection.Database)
-}
-func getUk(connection *Connection) string {
-	return fmt.Sprintf("%s:%s:%s", connection.Host, connection.Port, connection.Password)
 }
 
 type Redis struct {
@@ -72,7 +70,7 @@ type Redis struct {
 	shard         bool
 	databaseIndex int
 	master        bool
-	uk            string
+	dsn           string
 }
 
 func New(baseDatabase string) *Redis {
@@ -93,17 +91,17 @@ func (this *Redis) Master() *Redis {
 	return this
 }
 func (this *Redis) getPool() *redis.Client {
-	if "" == this.uk {
+	if "" == this.dsn {
 		if !this.shard {
 			this.databaseIndex = 0
 		}
 		database, ok := redisConf[this.baseDatabase]
 		_interceptor.Insure(ok).
-			Message("数据库配置不存在").
+			CodeMessage(_codeMessage.ErrMapKeyNotExists).
 			Data(map[string]interface{}{"database": this.baseDatabase}).
 			Do()
 		_interceptor.Insure(this.databaseIndex < database.Count).
-			Message("数据库配置不存在").
+			CodeMessage(_codeMessage.ErrSliceOutOfIndex).
 			Data(map[string]interface{}{"database": this.baseDatabase, "index": this.databaseIndex}).
 			Do()
 		cluster := database.Cluster[this.databaseIndex]
@@ -118,9 +116,9 @@ func (this *Redis) getPool() *redis.Client {
 			rand.Seed(time.Now().Unix())
 			r = rand.Intn(group.Count - 1)
 		}
-		this.uk = getUk(group.Connection[r])
+		this.dsn = getDsn(group.Connection[r])
 	}
-	return redisPool[this.uk]
+	return redisPool[this.dsn]
 }
 func (this *Redis) getCtx() context.Context {
 	return context.Background()
