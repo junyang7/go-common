@@ -44,6 +44,7 @@ func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	timeS := _millisecond.Get()
 	p := &processor{
 		timeS: timeS,
+		conf:  this.conf,
 		ctx:   _context.New(timeS, w, r),
 		w:     w,
 		r:     r,
