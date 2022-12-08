@@ -1,6 +1,7 @@
 package _context
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
@@ -69,16 +70,19 @@ func (this *Context) preparePost() {
 		}
 	}
 	if -1 != strings.Index(contentType, "application/json") {
-		post := map[string]interface{}{}
+		var post map[string]interface{}
+		err := json.NewDecoder(this.r.Body).Decode(&post)
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrJsonNewDecoderDecode).
 			Message(err).
 			Do()
-		err := this.r.Body.Close()
-		_interceptor.Insure(nil == err).
-			CodeMessage(_codeMessage.ErrHttpRequestBodyClose).
-			Message(err).
-			Do()
+		{
+			err := this.r.Body.Close()
+			_interceptor.Insure(nil == err).
+				CodeMessage(_codeMessage.ErrHttpRequestBodyClose).
+				Message(err).
+				Do()
+		}
 		for k, v := range post {
 			this.post[k] = fmt.Sprintf("%v", v)
 		}
