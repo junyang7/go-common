@@ -14,8 +14,8 @@ import (
 )
 
 type Context struct {
-	W       http.ResponseWriter
-	R       *http.Request
+	w       http.ResponseWriter
+	r       *http.Request
 	get     map[string]string
 	post    map[string]string
 	request map[string]string
@@ -23,12 +23,19 @@ type Context struct {
 	server  map[string]string
 }
 
+func New(w http.ResponseWriter, r *http.Request) *Context {
+	return &Context{
+		w: w,
+		r: r,
+	}
+}
+
 func (this *Context) prepareGet() {
 	if nil != this.get {
 		return
 	}
 	this.get = map[string]string{}
-	for k, v := range this.R.URL.Query() {
+	for k, v := range this.r.URL.Query() {
 		this.get[k] = v[0]
 	}
 }
@@ -37,24 +44,24 @@ func (this *Context) preparePost() {
 		return
 	}
 	this.post = map[string]string{}
-	err := this.R.ParseForm()
+	err := this.r.ParseForm()
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHttpRequestParseForm).
 		Message(err).
 		Do()
-	contentType := strings.ToLower(this.R.Header.Get("content-type"))
+	contentType := strings.ToLower(this.r.Header.Get("content-type"))
 	if -1 != strings.Index(contentType, "application/x-www-form-urlencoded") {
-		for k, v := range this.R.PostForm {
+		for k, v := range this.r.PostForm {
 			this.post[k] = v[0]
 		}
 	}
 	if -1 != strings.Index(contentType, "multipart/form-data") {
-		err := this.R.ParseMultipartForm(32 << 20)
+		err := this.r.ParseMultipartForm(32 << 20)
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrHttpRequestParseMultipartForm).
 			Message(err).
 			Do()
-		for k, v := range this.R.PostForm {
+		for k, v := range this.r.PostForm {
 			this.post[k] = v[0]
 		}
 	}
@@ -64,7 +71,7 @@ func (this *Context) preparePost() {
 			CodeMessage(_codeMessage.ErrJsonNewDecoderDecode).
 			Message(err).
 			Do()
-		err := this.R.Body.Close()
+		err := this.r.Body.Close()
 		_interceptor.Insure(nil == err).
 			CodeMessage(_codeMessage.ErrHttpRequestBodyClose).
 			Message(err).
@@ -91,7 +98,7 @@ func (this *Context) prepareCookie() {
 		return
 	}
 	this.cookie = map[string]string{}
-	for _, v := range this.R.Cookies() {
+	for _, v := range this.r.Cookies() {
 		this.cookie[v.Name] = v.Value
 	}
 }
@@ -100,11 +107,11 @@ func (this *Context) prepareServer() {
 		return
 	}
 	this.server = map[string]string{}
-	for k, v := range this.R.Header {
+	for k, v := range this.r.Header {
 		this.server[k] = v[0]
 	}
-	this.server["method"] = this.R.Method
-	this.server["path"] = this.R.URL.Path
+	this.server["method"] = this.r.Method
+	this.server["path"] = this.r.URL.Path
 }
 
 func (this *Context) Get(name string) *_parameter.Parameter {
@@ -148,7 +155,7 @@ func (this *Context) ServerAll() map[string]string {
 	return this.server
 }
 func (this *Context) File(name string) *multipart.FileHeader {
-	if f, ok := this.R.MultipartForm.File[name]; ok && len(f) > 0 {
+	if f, ok := this.r.MultipartForm.File[name]; ok && len(f) > 0 {
 		return f[0]
 	}
 	return nil
@@ -159,8 +166,8 @@ func (this *Context) Json(value interface{}) {
 	if _is.NotEmpty(value) {
 		res.Data = value
 	}
-	_render.New(this.W, this.R).Json(res)
+	_render.New(this.w, this.r).Json(res)
 }
 func (this *Context) Text(value interface{}) {
-	_render.New(this.W, this.R).Text(value)
+	_render.New(this.w, this.r).Text(value)
 }
