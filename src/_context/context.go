@@ -5,6 +5,7 @@ import (
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_is"
+	"github.com/junyang7/go-common/src/_millisecond"
 	"github.com/junyang7/go-common/src/_parameter"
 	"github.com/junyang7/go-common/src/_render"
 	"github.com/junyang7/go-common/src/_response"
@@ -14,6 +15,7 @@ import (
 )
 
 type Context struct {
+	timeS   int64
 	w       http.ResponseWriter
 	r       *http.Request
 	get     map[string]string
@@ -23,10 +25,11 @@ type Context struct {
 	server  map[string]string
 }
 
-func New(w http.ResponseWriter, r *http.Request) *Context {
+func New(timeS int64, w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{
-		w: w,
-		r: r,
+		timeS: timeS,
+		w:     w,
+		r:     r,
 	}
 }
 
@@ -166,6 +169,8 @@ func (this *Context) Json(value interface{}) {
 	if _is.NotEmpty(value) {
 		res.Data = value
 	}
+	res.Time = _millisecond.Get()
+	res.Consume = res.Time - this.timeS
 	_render.New(this.w, this.r).Json(res)
 }
 func (this *Context) Text(value interface{}) {
