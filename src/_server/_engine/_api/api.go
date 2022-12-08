@@ -5,6 +5,7 @@ import (
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_exception"
 	"github.com/junyang7/go-common/src/_interceptor"
+	"github.com/junyang7/go-common/src/_millisecond"
 	"github.com/junyang7/go-common/src/_render"
 	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_server/_router"
@@ -39,15 +40,18 @@ func Initialize(conf *Conf) {
 }
 
 func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	timeS := _millisecond.Get()
 	p := &processor{
-		ctx: &_context.Context{W: w, R: r},
-		w:   w,
-		r:   r,
+		timeS: timeS,
+		ctx:   _context.New(timeS, w, r),
+		w:     w,
+		r:     r,
 	}
 	p.do()
 }
 
 type processor struct {
+	timeS  int64
 	conf   *Conf
 	ctx    *_context.Context
 	w      http.ResponseWriter
@@ -138,5 +142,7 @@ func (this *processor) exception(err interface{}) {
 		res.Code = -1
 		res.Message = "failure"
 	}
+	res.Time = _millisecond.Get()
+	res.Consume = res.Time - this.timeS
 	_render.New(this.w, this.r).Json(res)
 }
