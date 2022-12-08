@@ -15,9 +15,10 @@ import (
 )
 
 type Conf struct {
-	Ip   string `json:"ip"`
-	Port string `json:"port"`
-	Ipv4 struct {
+	Debug bool   `json:"debug"`
+	Ip    string `json:"ip"`
+	Port  string `json:"port"`
+	Ipv4  struct {
 		Black []string
 		White []string
 	}
@@ -144,5 +145,9 @@ func (this *processor) exception(err interface{}) {
 	}
 	res.Time = _millisecond.Get()
 	res.Consume = res.Time - this.timeS
+	if !this.conf.Debug {
+		res.File = ""
+		res.Line = 0
+	}
 	_render.New(this.w, this.r).Json(res)
 }
