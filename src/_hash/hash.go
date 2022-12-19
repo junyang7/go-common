@@ -1,13 +1,16 @@
 package _hash
 
 import (
+	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/base64"
 	"encoding/hex"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
+	"net/url"
 )
 
 func Md5(data string) string {
@@ -45,4 +48,13 @@ func Sha512(data string) string {
 		Message(err).
 		Do()
 	return hex.EncodeToString(h.Sum(nil))
+}
+func HmacSha1(data string, key string) string {
+	h := hmac.New(sha1.New, []byte(key))
+	_, err := h.Write([]byte(data))
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrHashHashWrite).
+		Message(err).
+		Do()
+	return url.QueryEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
 }
