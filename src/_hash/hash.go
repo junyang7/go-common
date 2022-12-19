@@ -11,38 +11,38 @@ import (
 )
 
 func Md5(data string) string {
-	hash := md5.New()
-	_, err := hash.Write([]byte(data))
+	h := md5.New()
+	_, err := h.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
 		Message(err).
 		Do()
-	return hex.EncodeToString(hash.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
 func Sha1(data string) string {
-	hash := sha1.New()
-	_, err := hash.Write([]byte(data))
+	h := sha1.New()
+	_, err := h.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
 		Message(err).
 		Do()
-	return hex.EncodeToString(hash.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
 func Sha256(data string) string {
-	hash := sha256.New()
-	_, err := hash.Write([]byte(data))
+	h := sha256.New()
+	_, err := h.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
 		Message(err).
 		Do()
-	return hex.EncodeToString(hash.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
 func Sha512(data string) string {
-	hash := sha512.New()
-	_, err := hash.Write([]byte(data))
+	h := sha512.New()
+	_, err := h.Write([]byte(data))
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrHashHashWrite).
 		Message(err).
 		Do()
-	return hex.EncodeToString(hash.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
