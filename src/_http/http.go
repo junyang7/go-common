@@ -89,7 +89,7 @@ func (this *_http) Do() string {
 			for k, v := range this.data {
 				parameter.Set(k, _as.String(v))
 			}
-			_url += parameter.Encode()
+			_url += "?" + parameter.Encode()
 		}
 		break
 	default:
