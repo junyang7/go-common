@@ -7,11 +7,12 @@ import (
 )
 
 type router struct {
-	prefix         string
-	path           string
-	methodList     []string
-	middlewareList []func(ctx *_context.Context)
-	handler        func(ctx *_context.Context)
+	prefix               string
+	path                 string
+	methodList           []string
+	middlewareBeforeList []func(ctx *_context.Context)
+	middlewareAfterList  []func(ctx *_context.Context)
+	handler              func(ctx *_context.Context)
 }
 
 var groupList = []*router{}
@@ -29,14 +30,24 @@ func Prefix(prefix string) *router {
 	this.prefix = prefix
 	return this
 }
-func Middleware(middleware func(ctx *_context.Context)) *router {
+func MiddlewareBefore(middlewareBefore func(ctx *_context.Context)) *router {
 	this := &router{}
-	this.middlewareList = append(this.middlewareList, middleware)
+	this.middlewareBeforeList = append(this.middlewareBeforeList, middlewareBefore)
 	return this
 }
-func MiddlewareList(middlewareList []func(ctx *_context.Context)) *router {
+func MiddlewareBeforeList(middlewareBeforeList []func(ctx *_context.Context)) *router {
 	this := &router{}
-	this.middlewareList = append(this.middlewareList, middlewareList...)
+	this.middlewareBeforeList = append(this.middlewareBeforeList, middlewareBeforeList...)
+	return this
+}
+func MiddlewareAfter(middlewareAfter func(ctx *_context.Context)) *router {
+	this := &router{}
+	this.middlewareAfterList = append(this.middlewareAfterList, middlewareAfter)
+	return this
+}
+func MiddlewareAfterList(middlewareAfterList []func(ctx *_context.Context)) *router {
+	this := &router{}
+	this.middlewareAfterList = append(this.middlewareAfterList, middlewareAfterList...)
 	return this
 }
 func Post(path string, handler func(ctx *_context.Context)) {
@@ -79,12 +90,20 @@ func (this *router) Prefix(prefix string) *router {
 	this.prefix = prefix
 	return this
 }
-func (this *router) Middleware(middleware func(ctx *_context.Context)) *router {
-	this.middlewareList = append(this.middlewareList, middleware)
+func (this *router) MiddlewareBefore(middlewareBefore func(ctx *_context.Context)) *router {
+	this.middlewareBeforeList = append(this.middlewareBeforeList, middlewareBefore)
 	return this
 }
-func (this *router) MiddlewareList(middlewareList []func(ctx *_context.Context)) *router {
-	this.middlewareList = append(this.middlewareList, middlewareList...)
+func (this *router) MiddlewareBeforeList(middlewareBeforeList []func(ctx *_context.Context)) *router {
+	this.middlewareBeforeList = append(this.middlewareBeforeList, middlewareBeforeList...)
+	return this
+}
+func (this *router) MiddlewareAfter(middlewareAfter func(ctx *_context.Context)) *router {
+	this.middlewareAfterList = append(this.middlewareAfterList, middlewareAfter)
+	return this
+}
+func (this *router) MiddlewareAfterList(middlewareAfterList []func(ctx *_context.Context)) *router {
+	this.middlewareAfterList = append(this.middlewareAfterList, middlewareAfterList...)
 	return this
 }
 func (this *router) Post(path string, handler func(ctx *_context.Context)) {
@@ -108,19 +127,23 @@ func (this *router) Method(method string, path string, handler func(ctx *_contex
 func (this *router) MethodList(methodList []string, path string, handler func(ctx *_context.Context)) {
 	var _path string
 	var _methodList []string
-	var _middlewareList []func(ctx *_context.Context)
+	var _middlewareBeforeList []func(ctx *_context.Context)
+	var _middlewareAfterList []func(ctx *_context.Context)
 	for _, group := range groupList {
 		_path += group.prefix
-		_middlewareList = append(_middlewareList, group.middlewareList...)
+		_middlewareBeforeList = append(_middlewareBeforeList, group.middlewareBeforeList...)
+		_middlewareAfterList = append(_middlewareAfterList, group.middlewareAfterList...)
 	}
 	_path += this.prefix
 	_path += path
 	_methodList = append(_methodList, methodList...)
-	_middlewareList = append(_middlewareList, this.middlewareList...)
+	_middlewareBeforeList = append(_middlewareBeforeList, this.middlewareBeforeList...)
+	_middlewareAfterList = append(_middlewareAfterList, this.middlewareAfterList...)
 	_router.RouterMap[_path] = &_router.Router{
-		Path:           _path,
-		MethodList:     _methodList,
-		MiddlewareList: _middlewareList,
-		Handler:        handler,
+		Path:                 _path,
+		MethodList:           _methodList,
+		MiddlewareBeforeList: _middlewareBeforeList,
+		MiddlewareAfterList:  _middlewareAfterList,
+		Handler:              handler,
 	}
 }

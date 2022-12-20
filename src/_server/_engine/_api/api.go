@@ -80,9 +80,6 @@ func (this *processor) do() {
 	this.middlewareAfter()
 }
 
-func (this *processor) business() {
-	this.router.Handler(this.ctx)
-}
 func (this *processor) checkIp() {
 
 }
@@ -124,11 +121,18 @@ func (this *processor) checkRouter() {
 func (this *processor) checkRouterMethod() {
 
 }
-func (this *processor) middlewareAfter() {
-
-}
 func (this *processor) middlewareBefore() {
-
+	for _, middleware := range this.router.MiddlewareBeforeList {
+		middleware(this.ctx)
+	}
+}
+func (this *processor) business() {
+	this.router.Handler(this.ctx)
+}
+func (this *processor) middlewareAfter() {
+	for _, middleware := range this.router.MiddlewareAfterList {
+		middleware(this.ctx)
+	}
 }
 func (this *processor) exception(err interface{}) {
 	res := _response.New()
