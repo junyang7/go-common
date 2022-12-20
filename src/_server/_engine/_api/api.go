@@ -67,6 +67,9 @@ func (this *processor) do() {
 			this.exception(err)
 		}
 	}()
+
+	this.w.Header().Add("access-control-allow-credentials", "true")
+
 	this.checkIp()
 	this.checkMethod()
 	this.checkOrigin()
@@ -98,7 +101,7 @@ func (this *processor) checkOrigin() {
 			if 4 == len(matchedList) {
 				headerValue += ":" + matchedList[3]
 			}
-			this.conf.Header["access-control-allow-origin"] = headerValue
+			this.w.Header().Add("access-control-allow-origin", headerValue)
 			return
 		}
 	}
