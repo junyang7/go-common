@@ -179,6 +179,18 @@ func (this *Context) Context(name string) string {
 	}
 	return ""
 }
+func (this *Context) SetHeader(name string, value string) *Context {
+	this.w.Header().Set(name, value)
+	return this
+}
+func (this *Context) SetCookie(cookie *http.Cookie) *Context {
+	http.SetCookie(this.w, cookie)
+	return this
+}
+func (this *Context) SetContext(name string, value string) *Context {
+	this.context[name] = value
+	return this
+}
 
 func (this *Context) Json(value interface{}) {
 	res := _response.New()
