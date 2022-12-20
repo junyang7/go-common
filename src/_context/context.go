@@ -121,6 +121,10 @@ func (this *Context) prepareServer() {
 	}
 	this.server["method"] = this.r.Method
 	this.server["path"] = this.r.URL.Path
+	this.server["host"] = this.r.Host
+	this.server["protocol"] = this.r.Proto
+	this.server["referer"] = this.r.Referer()
+	this.server["user-agent"] = this.r.UserAgent()
 }
 
 func (this *Context) Get(name string) *_parameter.Parameter {
