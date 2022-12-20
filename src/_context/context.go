@@ -115,7 +115,7 @@ func (this *Context) prepareServer() {
 	}
 	this.server = map[string]string{}
 	for k, v := range this.r.Header {
-		this.server[k] = v[0]
+		this.server[strings.ToLower(k)] = v[0]
 	}
 	this.server["method"] = this.r.Method
 	this.server["path"] = this.r.URL.Path
