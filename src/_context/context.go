@@ -24,13 +24,15 @@ type Context struct {
 	request map[string]string
 	cookie  map[string]string
 	server  map[string]string
+	context map[string]string
 }
 
 func New(timeS int64, w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{
-		timeS: timeS,
-		w:     w,
-		r:     r,
+		timeS:   timeS,
+		w:       w,
+		r:       r,
+		context: map[string]string{},
 	}
 }
 
@@ -166,6 +168,12 @@ func (this *Context) File(name string) *multipart.FileHeader {
 		return f[0]
 	}
 	return nil
+}
+func (this *Context) Context(name string) string {
+	if value, ok := this.context[name]; ok {
+		return value
+	}
+	return ""
 }
 
 func (this *Context) Json(value interface{}) {
