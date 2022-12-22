@@ -5,6 +5,7 @@ import (
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_is"
+	"github.com/junyang7/go-common/src/_slice"
 	"strings"
 )
 
@@ -47,6 +48,13 @@ func (this *Int) Max(max int) *Int {
 }
 func (this *Int) Between(min int, max int) *Int {
 	_interceptor.Insure(this.value >= min && this.value <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Int) In(value []int) *Int {
+	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
@@ -100,6 +108,13 @@ func (this *String) MaxLength(max int) *String {
 		Do()
 	return this
 }
+func (this *String) In(value []string) *String {
+	_interceptor.Insure(_slice.In(this.value, value)).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
 func (this *String) Value() string {
 	return this.value
 }
@@ -125,6 +140,13 @@ func (this *Bool) Default(value bool) *Bool {
 }
 func (this *Bool) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Bool {
 	this.codeMessage = codeMessage
+	return this
+}
+func (this *Bool) In(value []bool) *Bool {
+	_interceptor.Insure(_slice.In(this.value, value)).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
 	return this
 }
 func (this *Bool) Value() bool {
@@ -170,6 +192,13 @@ func (this *Float64) Max(max float64) *Float64 {
 }
 func (this *Float64) Between(min float64, max float64) *Float64 {
 	_interceptor.Insure(this.value >= min && this.value <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Float64) In(value []float64) *Float64 {
+	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
