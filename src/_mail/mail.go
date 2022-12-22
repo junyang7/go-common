@@ -6,50 +6,60 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-type mail struct {
-	host     string
-	port     int
-	username string
-	password string
-	from     string
-	to       []string
-	cc       []string
-	subject  string
-	content  string
-	attach   []string
+type Conf struct {
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Username string `json:"username"`
+	Passport string `json:"passport"`
+	From     string `json:"from"`
 }
 
-func New(host string, port int, username string, password string, from string, to []string, subject string, content string) *mail {
+type mail struct {
+	conf    *Conf
+	to      []string
+	cc      []string
+	subject string
+	content string
+	attach  []string
+}
+
+func New(conf *Conf, to []string) *mail {
 	return &mail{
-		host:     host,
-		port:     port,
-		username: username,
-		password: password,
-		from:     from,
-		to:       to,
-		subject:  subject,
-		content:  content,
+		conf: conf,
+		to:   to,
 	}
 }
-func (this *mail) Cc(cc ...string) *mail {
+func (this *mail) Cc(cc []string) *mail {
 	this.cc = cc
 	return this
 }
-func (this *mail) Attach(attach ...string) *mail {
+func (this *mail) Subject(subject string) *mail {
+	this.subject = subject
+	return this
+}
+func (this *mail) Content(content string) *mail {
+	this.content = content
+	return this
+}
+func (this *mail) Attach(attach []string) *mail {
 	this.attach = attach
 	return this
 }
 func (this *mail) Send() {
+	d := gomail.NewDialer(this.conf.Host, this.conf.Port, this.conf.Username, this.conf.Passport)
 	m := gomail.NewMessage()
-	m.SetHeader("From", this.from)
+	m.SetHeader("From", this.conf.From)
 	m.SetHeader("To", this.to...)
-	m.SetHeader("Cc", this.cc...)
+	if len(this.cc) > 0 {
+		m.SetHeader("Cc", this.cc...)
+	}
 	m.SetHeader("Subject", this.subject)
 	m.SetBody("text/html", this.content)
-	for _, attach := range this.attach {
-		m.Attach(attach)
+	if len(this.attach) > 0 {
+		for _, attach := range this.attach {
+			m.Attach(attach)
+		}
 	}
-	d := gomail.NewDialer(this.host, this.port, this.username, this.password)
 	err := d.DialAndSend(m)
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrGoMailDialerDialAndSend).
