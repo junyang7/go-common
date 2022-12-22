@@ -4,15 +4,12 @@ import (
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_exception"
-	"github.com/junyang7/go-common/src/_file"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_millisecond"
 	"github.com/junyang7/go-common/src/_render"
 	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_server/_router"
-	"mime"
 	"net/http"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -40,8 +37,11 @@ type engine struct {
 
 func Initialize(conf *Conf) {
 	this := &engine{conf: conf}
-	err := http.ListenAndServe(this.conf.Ip+":"+this.conf.Port, this)
-	panic(err)
+	http.HandleFunc("/api/", this.ServeHTTP)
+	http.Handle("/", http.FileServer(http.Dir(conf.Root)))
+	if err := http.ListenAndServe(this.conf.Ip+":"+this.conf.Port, nil); nil != err {
+		panic(err)
+	}
 }
 
 func (this *engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -79,24 +79,6 @@ func (this *processor) do() {
 	this.checkIp()
 	this.checkMethod()
 	this.checkOrigin()
-
-	path := this.ctx.Server("path").String().Value()
-
-	if !strings.HasPrefix(path, "/api/") {
-		this.mode = "web"
-		file := this.conf.Root + path
-		if !_file.Exists(file) && !strings.HasSuffix(path, "/index.html") {
-			file += "/index.html"
-		}
-		if _file.Exists(file) {
-			this.w.Header().Set("content-type", mime.TypeByExtension(filepath.Ext(file)))
-			this.w.Write(_file.Read(file))
-			return
-		}
-		http.NotFound(this.w, this.r)
-		return
-	}
-
 	this.checkRouter()
 	this.checkRouterMethod()
 
