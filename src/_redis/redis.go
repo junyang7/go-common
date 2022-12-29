@@ -579,7 +579,7 @@ func (this *Redis) ZAdd(key string, parameter ...interface{}) int64 {
 // ZCard
 // 1.2.0
 func (this *Redis) ZCard(key string) int64 {
-	res := this.getPool().ZAdd(this.getCtx(), key).Val()
+	res := this.getPool().ZCard(this.getCtx(), key).Val()
 	return res
 }
 
