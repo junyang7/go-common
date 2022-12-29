@@ -583,6 +583,13 @@ func (this *Redis) ZCard(key string) int64 {
 	return res
 }
 
+// ZRange
+// 1.2.0
+func (this *Redis) ZRange(key string, start int64, end int64) []string {
+	res := this.getPool().ZRange(this.getCtx(), key, start, end).Val()
+	return res
+}
+
 // ZRangeByScore
 // 1.0.5-6.2.0
 func (this *Redis) ZRangeByScore(key string, min int64, max int64) []string {
