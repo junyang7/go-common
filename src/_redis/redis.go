@@ -293,6 +293,13 @@ func (this *Redis) LIndex(key string, index int64) string {
 	return res
 }
 
+// LRange
+// 1.0.0
+func (this *Redis) LRange(key string, start int64, stop int64) []string {
+	res := this.getPool().LRange(this.getCtx(), key, start, stop).Val()
+	return res
+}
+
 // LRem
 // 1.0.0
 func (this *Redis) LRem(key string, count int64, element interface{}) int64 {
@@ -585,8 +592,8 @@ func (this *Redis) ZCard(key string) int64 {
 
 // ZRange
 // 1.2.0
-func (this *Redis) ZRange(key string, start int64, end int64) []string {
-	res := this.getPool().ZRange(this.getCtx(), key, start, end).Val()
+func (this *Redis) ZRange(key string, start int64, stop int64) []string {
+	res := this.getPool().ZRange(this.getCtx(), key, start, stop).Val()
 	return res
 }
 
