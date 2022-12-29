@@ -53,6 +53,38 @@ func (this *Int) Between(min int, max int) *Int {
 		Do()
 	return this
 }
+func (this *Int) Length(length int) *Int {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l == length).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Int) LengthMin(min int) *Int {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l >= min).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Int) LengthMax(max int) *Int {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Int) LengthBetween(min int, max int) *Int {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l >= min && l <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
 func (this *Int) In(value []int) *Int {
 	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
@@ -87,22 +119,47 @@ func (this *String) CodeMessage(codeMessage *_codeMessage.CodeMessage) *String {
 	this.codeMessage = codeMessage
 	return this
 }
+func (this *String) Empty() *String {
+	_interceptor.Insure(_is.Empty(this.value)).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
 func (this *String) NotEmpty() *String {
-	_interceptor.Insure(_is.NotEmpty(this.value)).
+	_interceptor.Insure(!_is.Empty(this.value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *String) MinLength(min int) *String {
-	_interceptor.Insure(len(this.value) >= min).
+func (this *String) Length(length int) *String {
+	l := len(this.value)
+	_interceptor.Insure(l == length).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *String) MaxLength(max int) *String {
-	_interceptor.Insure(len(this.value) <= max).
+func (this *String) LengthMin(min int) *String {
+	l := len(this.value)
+	_interceptor.Insure(l >= min).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *String) LengthMax(max int) *String {
+	l := len(this.value)
+	_interceptor.Insure(l <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *String) LengthBetween(min int, max int) *String {
+	l := len(this.value)
+	_interceptor.Insure(l >= min && l <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
@@ -192,6 +249,38 @@ func (this *Float64) Max(max float64) *Float64 {
 }
 func (this *Float64) Between(min float64, max float64) *Float64 {
 	_interceptor.Insure(this.value >= min && this.value <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Float64) Length(length int) *Float64 {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l == length).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Float64) LengthMin(min int) *Float64 {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l >= min).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Float64) LengthMax(max int) *Float64 {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l <= max).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *Float64) LengthBetween(min int, max int) *Float64 {
+	l := len(_as.String(this.value))
+	_interceptor.Insure(l >= min && l <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
