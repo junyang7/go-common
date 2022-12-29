@@ -142,43 +142,43 @@ func (this *Redis) Persist(key string) bool {
 
 // Expire
 // 1.0.0
-func (this *Redis) Expire(key string, seconds int64) bool {
+func (this *Redis) Expire(key string, seconds int) bool {
 	res := this.getPool().Expire(this.getCtx(), key, time.Second*time.Duration(seconds)).Val()
 	return res
 }
 
 // PExpire
 // 2.6.0
-func (this *Redis) PExpire(key string, milliseconds int64) bool {
+func (this *Redis) PExpire(key string, milliseconds int) bool {
 	res := this.getPool().Expire(this.getCtx(), key, time.Millisecond*time.Duration(milliseconds)).Val()
 	return res
 }
 
 // Ttl
 // 1.0.0
-func (this *Redis) Ttl(key string) int64 {
+func (this *Redis) Ttl(key string) int {
 	res := this.getPool().TTL(this.getCtx(), key).Val()
 	if res > 0 {
-		return int64(res / time.Second)
+		return int(res / time.Second)
 	}
 	return 0
 }
 
 // PTtl
 // 2.6.0
-func (this *Redis) PTtl(key string) int64 {
+func (this *Redis) PTtl(key string) int {
 	res := this.getPool().TTL(this.getCtx(), key).Val()
 	if res > 0 {
-		return int64(res / time.Millisecond)
+		return int(res / time.Millisecond)
 	}
 	return 0
 }
 
 // Scan
 // 2.8.0
-func (this *Redis) Scan(cursor uint64, match string, count int64, redisType string) ([]string, uint64) {
-	resKeys, resCursor := this.getPool().ScanType(this.getCtx(), cursor, match, count, redisType).Val()
-	return resKeys, resCursor
+func (this *Redis) Scan(cursor int, match string, count int, redisType string) ([]string, int) {
+	resKeys, resCursor := this.getPool().ScanType(this.getCtx(), uint64(cursor), match, int64(count), redisType).Val()
+	return resKeys, int(resCursor)
 }
 
 // Type
@@ -190,18 +190,18 @@ func (this *Redis) Type(key string) string {
 
 // Unlink
 // 4.0.0
-func (this *Redis) Unlink(key ...string) int64 {
+func (this *Redis) Unlink(key ...string) int {
 	res := this.getPool().Unlink(this.getCtx(), key...).Val()
-	return res
+	return int(res)
 }
 
 // server
 
 // DbSize
 // 1.0.0
-func (this *Redis) DbSize() int64 {
+func (this *Redis) DbSize() int {
 	res := this.getPool().DBSize(this.getCtx()).Val()
-	return res
+	return int(res)
 }
 
 // Info
@@ -215,16 +215,16 @@ func (this *Redis) Info() string {
 
 // Decr
 // 1.0.0
-func (this *Redis) Decr(key string) int64 {
+func (this *Redis) Decr(key string) int {
 	res := this.getPool().Decr(this.getCtx(), key).Val()
-	return res
+	return int(res)
 }
 
 // DecrBy
 // 1.0.0
-func (this *Redis) DecrBy(key string, decrement int64) int64 {
-	res := this.getPool().DecrBy(this.getCtx(), key, decrement).Val()
-	return res
+func (this *Redis) DecrBy(key string, decrement int) int {
+	res := this.getPool().DecrBy(this.getCtx(), key, int64(decrement)).Val()
+	return int(res)
 }
 
 // Get
@@ -236,16 +236,16 @@ func (this *Redis) Get(key string) string {
 
 // Incr
 // 1.0.0
-func (this *Redis) Incr(key string) int64 {
+func (this *Redis) Incr(key string) int {
 	res := this.getPool().Incr(this.getCtx(), key).Val()
-	return res
+	return int(res)
 }
 
 // IncrBy
 // 1.0.0
-func (this *Redis) IncrBy(key string, increment int64) int64 {
-	res := this.getPool().IncrBy(this.getCtx(), key, increment).Val()
-	return res
+func (this *Redis) IncrBy(key string, increment int) int {
+	res := this.getPool().IncrBy(this.getCtx(), key, int64(increment)).Val()
+	return int(res)
 }
 
 // Set
@@ -265,14 +265,14 @@ func (this *Redis) SetNx(key string, value interface{}) bool {
 
 // SetEx
 // 2.0.0
-func (this *Redis) SetEx(key string, seconds int64, value interface{}) bool {
+func (this *Redis) SetEx(key string, seconds int, value interface{}) bool {
 	res := this.getPool().SetEX(this.getCtx(), key, value, time.Second*time.Duration(seconds)).Val()
 	return "OK" == res
 }
 
 // PSetEx
 // 2.6.0
-func (this *Redis) PSetEx(key string, milliseconds int64, value interface{}) bool {
+func (this *Redis) PSetEx(key string, milliseconds int, value interface{}) bool {
 	res := this.getPool().SetEX(this.getCtx(), key, value, time.Millisecond*time.Duration(milliseconds)).Val()
 	return "OK" == res
 }
@@ -281,58 +281,58 @@ func (this *Redis) PSetEx(key string, milliseconds int64, value interface{}) boo
 
 // LLen
 // 1.0.0
-func (this *Redis) LLen(key string) int64 {
+func (this *Redis) LLen(key string) int {
 	res := this.getPool().LLen(this.getCtx(), key).Val()
-	return res
+	return _as.Int(res)
 }
 
 // LIndex
 // 1.0.0
-func (this *Redis) LIndex(key string, index int64) string {
-	res := this.getPool().LIndex(this.getCtx(), key, index).Val()
+func (this *Redis) LIndex(key string, index int) string {
+	res := this.getPool().LIndex(this.getCtx(), key, int64(index)).Val()
 	return res
 }
 
 // LRange
 // 1.0.0
-func (this *Redis) LRange(key string, start int64, stop int64) []string {
-	res := this.getPool().LRange(this.getCtx(), key, start, stop).Val()
+func (this *Redis) LRange(key string, start int, stop int) []string {
+	res := this.getPool().LRange(this.getCtx(), key, int64(start), int64(stop)).Val()
 	return res
 }
 
 // LRem
 // 1.0.0
-func (this *Redis) LRem(key string, count int64, element interface{}) int64 {
-	res := this.getPool().LRem(this.getCtx(), key, count, element).Val()
-	return res
+func (this *Redis) LRem(key string, count int, element interface{}) int {
+	res := this.getPool().LRem(this.getCtx(), key, int64(count), element).Val()
+	return int(res)
 }
 
 // RPush
 // 1.0.0
-func (this *Redis) RPush(key string, element ...interface{}) int64 {
+func (this *Redis) RPush(key string, element ...interface{}) int {
 	res := this.getPool().RPush(this.getCtx(), key, element...).Val()
-	return res
+	return int(res)
 }
 
 // LPush
 // 1.0.0
-func (this *Redis) LPush(key string, element ...interface{}) int64 {
+func (this *Redis) LPush(key string, element ...interface{}) int {
 	res := this.getPool().LPush(this.getCtx(), key, element...).Val()
-	return res
+	return int(res)
 }
 
 // RPushX
 // 2.2.0
-func (this *Redis) RPushX(key string, element ...interface{}) int64 {
+func (this *Redis) RPushX(key string, element ...interface{}) int {
 	res := this.getPool().RPushX(this.getCtx(), key, element...).Val()
-	return res
+	return int(res)
 }
 
 // LPushX
 // 2.2.0
-func (this *Redis) LPushX(key string, element ...interface{}) int64 {
+func (this *Redis) LPushX(key string, element ...interface{}) int {
 	res := this.getPool().LPushX(this.getCtx(), key, element...).Val()
-	return res
+	return int(res)
 }
 
 // RPop
@@ -351,14 +351,14 @@ func (this *Redis) LPop(key string, count int) []string {
 
 // BRPop
 // 2.0.0
-func (this *Redis) BRPop(seconds int64, key ...string) []string {
+func (this *Redis) BRPop(seconds int, key ...string) []string {
 	res := this.getPool().BRPop(this.getCtx(), time.Second*time.Duration(seconds), key...).Val()
 	return res
 }
 
 // BLPop
 // 2.0.0
-func (this *Redis) BLPop(seconds int64, key ...string) []string {
+func (this *Redis) BLPop(seconds int, key ...string) []string {
 	res := this.getPool().BLPop(this.getCtx(), time.Second*time.Duration(seconds), key...).Val()
 	return res
 }
@@ -367,9 +367,9 @@ func (this *Redis) BLPop(seconds int64, key ...string) []string {
 
 // HSet
 // 2.0.0
-func (this *Redis) HSet(key string, parameter ...interface{}) int64 {
+func (this *Redis) HSet(key string, parameter ...interface{}) int {
 	res := this.getPool().HSet(this.getCtx(), key, parameter...).Val()
-	return res
+	return int(res)
 }
 
 // HGetAll
@@ -402,9 +402,9 @@ func (this *Redis) HVals(key string) []string {
 
 // HDel
 // 2.0.0
-func (this *Redis) HDel(key string, field []string) int64 {
+func (this *Redis) HDel(key string, field []string) int {
 	res := this.getPool().HDel(this.getCtx(), key, field...).Val()
-	return res
+	return int(res)
 }
 
 // HExists
@@ -416,9 +416,9 @@ func (this *Redis) HExists(key string, field string) bool {
 
 // HLen
 // 2.0.0
-func (this *Redis) HLen(key string) int64 {
+func (this *Redis) HLen(key string) int {
 	res := this.getPool().HLen(this.getCtx(), key).Val()
-	return res
+	return int(res)
 }
 
 // HMGet
@@ -434,16 +434,16 @@ func (this *Redis) HMGet(key string, field ...string) []string {
 
 // HIncrBy
 // 2.0.0
-func (this *Redis) HIncrBy(key string, field string, increment int64) int64 {
-	res := this.getPool().HIncrBy(this.getCtx(), key, field, increment).Val()
-	return res
+func (this *Redis) HIncrBy(key string, field string, increment int) int {
+	res := this.getPool().HIncrBy(this.getCtx(), key, field, int64(increment)).Val()
+	return int(res)
 }
 
 // HScan
 // 2.8.0
-func (this *Redis) HScan(key string, cursor uint64, match string, count int64) ([]string, uint64) {
-	resKeys, resCursor := this.getPool().HScan(this.getCtx(), key, cursor, match, count).Val()
-	return resKeys, resCursor
+func (this *Redis) HScan(key string, cursor int, match string, count int) ([]string, int) {
+	resKeys, resCursor := this.getPool().HScan(this.getCtx(), key, uint64(cursor), match, int64(count)).Val()
+	return resKeys, int(resCursor)
 }
 
 // HSetNx
@@ -457,16 +457,16 @@ func (this *Redis) HSetNx(key string, field string, value interface{}) bool {
 
 // SAdd
 // 1.0.0
-func (this *Redis) SAdd(key string, member ...interface{}) int64 {
+func (this *Redis) SAdd(key string, member ...interface{}) int {
 	res := this.getPool().SAdd(this.getCtx(), key, member...).Val()
-	return res
+	return int(res)
 }
 
 // SCard
 // 1.0.0
-func (this *Redis) SCard(key string) int64 {
+func (this *Redis) SCard(key string) int {
 	res := this.getPool().SCard(this.getCtx(), key).Val()
-	return res
+	return int(res)
 }
 
 // SIsMember
@@ -492,30 +492,30 @@ func (this *Redis) SMembers(key string) []string {
 
 // SRem
 // 1.0.0
-func (this *Redis) SRem(key string, member ...interface{}) int64 {
+func (this *Redis) SRem(key string, member ...interface{}) int {
 	res := this.getPool().SRem(this.getCtx(), key, member).Val()
-	return res
+	return int(res)
 }
 
 // SRandMember
 // 1.0.0
-func (this *Redis) SRandMember(key string, count int64) []string {
-	res := this.getPool().SRandMemberN(this.getCtx(), key, count).Val()
+func (this *Redis) SRandMember(key string, count int) []string {
+	res := this.getPool().SRandMemberN(this.getCtx(), key, int64(count)).Val()
 	return res
 }
 
 // SPop
 // 1.0.0
-func (this *Redis) SPop(key string, count int64) []string {
-	res := this.getPool().SPopN(this.getCtx(), key, count).Val()
+func (this *Redis) SPop(key string, count int) []string {
+	res := this.getPool().SPopN(this.getCtx(), key, int64(count)).Val()
 	return res
 }
 
 // SScan
 // 2.8.0
-func (this *Redis) SScan(key string, cursor uint64, match string, count int64) ([]string, uint64) {
-	resKeys, resCursor := this.getPool().SScan(this.getCtx(), key, cursor, match, count).Val()
-	return resKeys, resCursor
+func (this *Redis) SScan(key string, cursor int, match string, count int) ([]string, int) {
+	resKeys, resCursor := this.getPool().SScan(this.getCtx(), key, uint64(cursor), match, int64(count)).Val()
+	return resKeys, int(resCursor)
 }
 
 // SDiff
@@ -527,9 +527,9 @@ func (this *Redis) SDiff(key ...string) []string {
 
 // SDiffStore
 // 1.0.0
-func (this *Redis) SDiffStore(destination string, key ...string) int64 {
+func (this *Redis) SDiffStore(destination string, key ...string) int {
 	res := this.getPool().SDiffStore(this.getCtx(), destination, key...).Val()
-	return res
+	return int(res)
 }
 
 // SInter
@@ -541,9 +541,9 @@ func (this *Redis) SInter(key ...string) []string {
 
 // SInterStore
 // 1.0.0
-func (this *Redis) SInterStore(destination string, key ...string) int64 {
+func (this *Redis) SInterStore(destination string, key ...string) int {
 	res := this.getPool().SInterStore(this.getCtx(), destination, key...).Val()
-	return res
+	return int(res)
 }
 
 // SUnion
@@ -555,9 +555,9 @@ func (this *Redis) SUnion(key []string) []string {
 
 // SUnionStore
 // 1.0.0
-func (this *Redis) SUnionStore(destination string, key ...string) int64 {
+func (this *Redis) SUnionStore(destination string, key ...string) int {
 	res := this.getPool().SUnionStore(this.getCtx(), destination, key...).Val()
-	return res
+	return int(res)
 }
 
 // SMove
@@ -571,7 +571,7 @@ func (this *Redis) SMove(source string, destination string, member interface{}) 
 
 // ZAdd
 // 1.2.0
-func (this *Redis) ZAdd(key string, parameter ...interface{}) int64 {
+func (this *Redis) ZAdd(key string, parameter ...interface{}) int {
 	member := []*redis.Z{}
 	for i, j := 0, len(parameter); i < j; i += 2 {
 		member = append(member, &redis.Z{
@@ -580,65 +580,65 @@ func (this *Redis) ZAdd(key string, parameter ...interface{}) int64 {
 		})
 	}
 	res := this.getPool().ZAdd(this.getCtx(), key, member...).Val()
-	return res
+	return int(res)
 }
 
 // ZCard
 // 1.2.0
-func (this *Redis) ZCard(key string) int64 {
+func (this *Redis) ZCard(key string) int {
 	res := this.getPool().ZCard(this.getCtx(), key).Val()
-	return res
+	return _as.Int(res)
 }
 
 // ZRange
 // 1.2.0
-func (this *Redis) ZRange(key string, start int64, stop int64) []string {
-	res := this.getPool().ZRange(this.getCtx(), key, start, stop).Val()
+func (this *Redis) ZRange(key string, start int, stop int) []string {
+	res := this.getPool().ZRange(this.getCtx(), key, int64(start), int64(stop)).Val()
 	return res
 }
 
 // ZRangeByScore
 // 1.0.5-6.2.0
-func (this *Redis) ZRangeByScore(key string, min int64, max int64) []string {
+func (this *Redis) ZRangeByScore(key string, min int, max int) []string {
 	res := this.getPool().ZRangeByScore(this.getCtx(), key, &redis.ZRangeBy{Min: _as.String(min), Max: _as.String(max)}).Val()
 	return res
 }
 
 // ZRem
 // 1.2.0
-func (this *Redis) ZRem(key string, member ...interface{}) int64 {
+func (this *Redis) ZRem(key string, member ...interface{}) int {
 	res := this.getPool().ZRem(this.getCtx(), key, member).Val()
-	return res
+	return int(res)
 }
 
 // ZScan
 // 2.8.0
-func (this *Redis) ZScan(key string, cursor uint64, match string, count int64) ([]string, uint64) {
-	resKeys, resCursor := this.getPool().ZScan(this.getCtx(), key, cursor, match, count).Val()
-	return resKeys, resCursor
+func (this *Redis) ZScan(key string, cursor int, match string, count int) ([]string, int) {
+	resKeys, resCursor := this.getPool().ZScan(this.getCtx(), key, uint64(cursor), match, int64(count)).Val()
+	return resKeys, int(resCursor)
 }
 
 // bitmap
 
 // SetBit
 // 2.2.0
-func (this *Redis) SetBit(key string, offset int64, value int) int64 {
-	res := this.getPool().SetBit(this.getCtx(), key, offset, value).Val()
-	return res
+func (this *Redis) SetBit(key string, offset int, value int) int {
+	res := this.getPool().SetBit(this.getCtx(), key, int64(offset), value).Val()
+	return int(res)
 }
 
 // GetBit
 // 2.2.0
-func (this *Redis) GetBit(key string, offset int64) int64 {
-	res := this.getPool().GetBit(this.getCtx(), key, offset).Val()
-	return res
+func (this *Redis) GetBit(key string, offset int) int {
+	res := this.getPool().GetBit(this.getCtx(), key, int64(offset)).Val()
+	return int(res)
 }
 
 // BitCount
 // 2.6.0
-func (this *Redis) BitCount(key string, start int64, end int64) int64 {
-	res := this.getPool().BitCount(this.getCtx(), key, &redis.BitCount{Start: start, End: end}).Val()
-	return res
+func (this *Redis) BitCount(key string, start int, end int) int {
+	res := this.getPool().BitCount(this.getCtx(), key, &redis.BitCount{Start: int64(start), End: int64(end)}).Val()
+	return int(res)
 }
 
 // Eval
