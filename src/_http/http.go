@@ -2,6 +2,7 @@ package _http
 
 import (
 	"bytes"
+	"crypto/tls"
 	"github.com/junyang7/go-common/src/_as"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
@@ -159,6 +160,8 @@ func (this *_http) Do() string {
 	for _, cookie := range this.cookie {
 		req.AddCookie(cookie)
 	}
+
+	http.DefaultClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 
 	res, err := http.DefaultClient.Do(req)
 	_interceptor.Insure(nil == err).
