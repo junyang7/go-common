@@ -32,28 +32,28 @@ func (this *Int) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Int {
 	this.codeMessage = codeMessage
 	return this
 }
-func (this *Int) Min(min int) *Int {
+func (this *Int) EnsureMin(min int) *Int {
 	_interceptor.Insure(this.value >= min).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) Max(max int) *Int {
+func (this *Int) EnsureMax(max int) *Int {
 	_interceptor.Insure(this.value <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) Between(min int, max int) *Int {
+func (this *Int) EnsureBetween(min int, max int) *Int {
 	_interceptor.Insure(this.value >= min && this.value <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) Length(length int) *Int {
+func (this *Int) EnsureLength(length int) *Int {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l == length).
 		CodeMessage(this.codeMessage).
@@ -61,7 +61,7 @@ func (this *Int) Length(length int) *Int {
 		Do()
 	return this
 }
-func (this *Int) LengthMin(min int) *Int {
+func (this *Int) EnsureLengthMin(min int) *Int {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l >= min).
 		CodeMessage(this.codeMessage).
@@ -69,7 +69,7 @@ func (this *Int) LengthMin(min int) *Int {
 		Do()
 	return this
 }
-func (this *Int) LengthMax(max int) *Int {
+func (this *Int) EnsureLengthMax(max int) *Int {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l <= max).
 		CodeMessage(this.codeMessage).
@@ -77,7 +77,7 @@ func (this *Int) LengthMax(max int) *Int {
 		Do()
 	return this
 }
-func (this *Int) LengthBetween(min int, max int) *Int {
+func (this *Int) EnsureLengthBetween(min int, max int) *Int {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l >= min && l <= max).
 		CodeMessage(this.codeMessage).
@@ -85,7 +85,7 @@ func (this *Int) LengthBetween(min int, max int) *Int {
 		Do()
 	return this
 }
-func (this *Int) In(value ...int) *Int {
+func (this *Int) EnsureIn(value ...int) *Int {
 	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
@@ -119,21 +119,21 @@ func (this *String) CodeMessage(codeMessage *_codeMessage.CodeMessage) *String {
 	this.codeMessage = codeMessage
 	return this
 }
-func (this *String) Empty() *String {
+func (this *String) EnsureEmpty() *String {
 	_interceptor.Insure(_is.Empty(this.value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *String) NotEmpty() *String {
+func (this *String) EnsureNotEmpty() *String {
 	_interceptor.Insure(!_is.Empty(this.value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *String) Length(length int) *String {
+func (this *String) EnsureLength(length int) *String {
 	l := len(this.value)
 	_interceptor.Insure(l == length).
 		CodeMessage(this.codeMessage).
@@ -141,7 +141,7 @@ func (this *String) Length(length int) *String {
 		Do()
 	return this
 }
-func (this *String) LengthMin(min int) *String {
+func (this *String) EnsureLengthMin(min int) *String {
 	l := len(this.value)
 	_interceptor.Insure(l >= min).
 		CodeMessage(this.codeMessage).
@@ -149,7 +149,7 @@ func (this *String) LengthMin(min int) *String {
 		Do()
 	return this
 }
-func (this *String) LengthMax(max int) *String {
+func (this *String) EnsureLengthMax(max int) *String {
 	l := len(this.value)
 	_interceptor.Insure(l <= max).
 		CodeMessage(this.codeMessage).
@@ -157,7 +157,7 @@ func (this *String) LengthMax(max int) *String {
 		Do()
 	return this
 }
-func (this *String) LengthBetween(min int, max int) *String {
+func (this *String) EnsureLengthBetween(min int, max int) *String {
 	l := len(this.value)
 	_interceptor.Insure(l >= min && l <= max).
 		CodeMessage(this.codeMessage).
@@ -165,7 +165,7 @@ func (this *String) LengthBetween(min int, max int) *String {
 		Do()
 	return this
 }
-func (this *String) In(value ...string) *String {
+func (this *String) EnsureIn(value ...string) *String {
 	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
@@ -199,7 +199,7 @@ func (this *Bool) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Bool {
 	this.codeMessage = codeMessage
 	return this
 }
-func (this *Bool) In(value ...bool) *Bool {
+func (this *Bool) EnsureIn(value ...bool) *Bool {
 	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
@@ -233,28 +233,28 @@ func (this *Float64) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Float64
 	this.codeMessage = codeMessage
 	return this
 }
-func (this *Float64) Min(min float64) *Float64 {
+func (this *Float64) EnsureMin(min float64) *Float64 {
 	_interceptor.Insure(this.value >= min).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Float64) Max(max float64) *Float64 {
+func (this *Float64) EnsureMax(max float64) *Float64 {
 	_interceptor.Insure(this.value <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Float64) Between(min float64, max float64) *Float64 {
+func (this *Float64) EnsureBetween(min float64, max float64) *Float64 {
 	_interceptor.Insure(this.value >= min && this.value <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Float64) Length(length int) *Float64 {
+func (this *Float64) EnsureLength(length int) *Float64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l == length).
 		CodeMessage(this.codeMessage).
@@ -262,7 +262,7 @@ func (this *Float64) Length(length int) *Float64 {
 		Do()
 	return this
 }
-func (this *Float64) LengthMin(min int) *Float64 {
+func (this *Float64) EnsureLengthMin(min int) *Float64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l >= min).
 		CodeMessage(this.codeMessage).
@@ -270,7 +270,7 @@ func (this *Float64) LengthMin(min int) *Float64 {
 		Do()
 	return this
 }
-func (this *Float64) LengthMax(max int) *Float64 {
+func (this *Float64) EnsureLengthMax(max int) *Float64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l <= max).
 		CodeMessage(this.codeMessage).
@@ -278,7 +278,7 @@ func (this *Float64) LengthMax(max int) *Float64 {
 		Do()
 	return this
 }
-func (this *Float64) LengthBetween(min int, max int) *Float64 {
+func (this *Float64) EnsureLengthBetween(min int, max int) *Float64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l >= min && l <= max).
 		CodeMessage(this.codeMessage).
@@ -286,7 +286,7 @@ func (this *Float64) LengthBetween(min int, max int) *Float64 {
 		Do()
 	return this
 }
-func (this *Float64) In(value ...float64) *Float64 {
+func (this *Float64) EnsureIn(value ...float64) *Float64 {
 	_interceptor.Insure(_slice.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
