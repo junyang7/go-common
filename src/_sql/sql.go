@@ -380,7 +380,7 @@ func (this *Sql) query() []map[string]string {
 
 }
 
-func (this *Sql) Add(row map[string]interface{}) int {
+func (this *Sql) Add(row map[string]interface{}) string {
 	this.master = true
 	this.rowList = []map[string]interface{}{row}
 	this.buildAddList()
@@ -390,9 +390,9 @@ func (this *Sql) Add(row map[string]interface{}) int {
 		CodeMessage(_codeMessage.ErrSqlResultLastInsertId).
 		Message(err).
 		Do()
-	return _as.Int(lastInsertId)
+	return _as.String(lastInsertId)
 }
-func (this *Sql) AddList(rowList []map[string]interface{}) int {
+func (this *Sql) AddList(rowList []map[string]interface{}) string {
 	this.master = true
 	this.rowList = rowList
 	this.buildAddList()
@@ -402,9 +402,9 @@ func (this *Sql) AddList(rowList []map[string]interface{}) int {
 		CodeMessage(_codeMessage.ErrSqlResultLastInsertId).
 		Message(err).
 		Do()
-	return _as.Int(lastInsertId)
+	return _as.String(lastInsertId)
 }
-func (this *Sql) Del() int {
+func (this *Sql) Del() string {
 	this.master = true
 	this.buildDel()
 	res := this.execute()
@@ -413,9 +413,9 @@ func (this *Sql) Del() int {
 		CodeMessage(_codeMessage.ErrSqlResultRowsAffected).
 		Message(err).
 		Do()
-	return _as.Int(effectedRowCount)
+	return _as.String(effectedRowCount)
 }
-func (this *Sql) Set(row map[string]interface{}) int {
+func (this *Sql) Set(row map[string]interface{}) string {
 	this.master = true
 	this.row = row
 	this.buildSet()
@@ -425,7 +425,7 @@ func (this *Sql) Set(row map[string]interface{}) int {
 		CodeMessage(_codeMessage.ErrSqlResultRowsAffected).
 		Message(err).
 		Do()
-	return _as.Int(effectedRowCount)
+	return _as.String(effectedRowCount)
 }
 func (this *Sql) Get() map[string]string {
 	this.limit = 1
@@ -441,16 +441,16 @@ func (this *Sql) GetList() []map[string]string {
 	this.buildGetList()
 	return this.query()
 }
-func (this *Sql) Count() int {
+func (this *Sql) Count() string {
 	this.buildCount()
-	return _as.Int(this.query()[0]["c"])
+	return _as.String(this.query()[0]["c"])
 }
 func (this *Sql) Exists() bool {
 	this.buildExists()
 	res := this.query()[0]["c"]
 	return _as.Int64(res) > 0
 }
-func (this *Sql) Execute(sql string, add bool) int {
+func (this *Sql) Execute(sql string, add bool) string {
 	this.master = true
 	this.sql = sql
 	res := this.execute()
@@ -460,14 +460,14 @@ func (this *Sql) Execute(sql string, add bool) int {
 			CodeMessage(_codeMessage.ErrSqlResultLastInsertId).
 			Message(err).
 			Do()
-		return _as.Int(lastInsertId)
+		return _as.String(lastInsertId)
 	}
 	effectedRowCount, err := res.RowsAffected()
 	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrSqlResultRowsAffected).
 		Message(err).
 		Do()
-	return _as.Int(effectedRowCount)
+	return _as.String(effectedRowCount)
 }
 func (this *Sql) Query(sql string) []map[string]string {
 	this.sql = sql
