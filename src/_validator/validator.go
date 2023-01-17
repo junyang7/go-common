@@ -93,6 +93,15 @@ func (this *Int) EnsureIn(value ...int) *Int {
 		Do()
 	return this
 }
+func (this *Int) String() *String {
+	return NewString(this.name, this.value)
+}
+func (this *Int) Bool() *Bool {
+	return NewBool(this.name, this.value)
+}
+func (this *Int) Float64() *Float64 {
+	return NewFloat64(this.name, this.value)
+}
 func (this *Int) Value() int {
 	return this.value
 }
@@ -180,6 +189,15 @@ func (this *String) EnsureRegexp(pattern string) *String {
 		Do()
 	return this
 }
+func (this *String) Bool() *Bool {
+	return NewBool(this.name, this.value)
+}
+func (this *String) Float64() *Float64 {
+	return NewFloat64(this.name, this.value)
+}
+func (this *String) Int() *Int {
+	return NewInt(this.name, this.value)
+}
 func (this *String) Value() string {
 	return this.value
 }
@@ -213,6 +231,15 @@ func (this *Bool) EnsureIn(value ...bool) *Bool {
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
+}
+func (this *Bool) Float64() *Float64 {
+	return NewFloat64(this.name, this.value)
+}
+func (this *Bool) Int() *Int {
+	return NewInt(this.name, this.value)
+}
+func (this *Bool) String() *String {
+	return NewString(this.name, this.value)
 }
 func (this *Bool) Value() bool {
 	return this.value
@@ -300,6 +327,15 @@ func (this *Float64) EnsureIn(value ...float64) *Float64 {
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
+}
+func (this *Float64) Int() *Int {
+	return NewInt(this.name, this.value)
+}
+func (this *Float64) String() *String {
+	return NewString(this.name, this.value)
+}
+func (this *Float64) Bool() *Bool {
+	return NewBool(this.name, this.value)
 }
 func (this *Float64) Value() float64 {
 	return this.value
