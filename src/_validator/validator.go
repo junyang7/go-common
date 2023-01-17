@@ -6,6 +6,7 @@ import (
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_is"
 	"github.com/junyang7/go-common/src/_slice"
+	"regexp"
 	"strings"
 )
 
@@ -167,6 +168,13 @@ func (this *String) EnsureLengthBetween(min int, max int) *String {
 }
 func (this *String) EnsureIn(value ...string) *String {
 	_interceptor.Insure(_slice.In(this.value, value)).
+		CodeMessage(this.codeMessage).
+		Data(map[string]interface{}{this.name: this.value}).
+		Do()
+	return this
+}
+func (this *String) EnsureRegexp(pattern string) *String {
+	_interceptor.Insure(regexp.MustCompile(pattern).MatchString(this.value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
