@@ -331,13 +331,10 @@ func (this *Sql) query() []map[string]string {
 
 	if nil != this.tx {
 		rowList, err = this.tx.Query(this.sql, this.getParameter()...)
-		if err != nil {
-			this.Rollback()
-			_interceptor.Insure(false).
-				CodeMessage(_codeMessage.ErrSqlTxQuery).
-				Message(err).
-				Do()
-		}
+		_interceptor.Insure(nil == err).
+			CodeMessage(_codeMessage.ErrSqlTxQuery).
+			Message(err).
+			Do()
 	} else {
 		rowList, err = this.getPool().Query(this.sql, this.getParameter()...)
 		_interceptor.Insure(nil == err).
@@ -494,7 +491,7 @@ func (this *Sql) Commit() *Sql {
 }
 func (this *Sql) Rollback() *Sql {
 	err := this.tx.Rollback()
-	_interceptor.Insure(false).
+	_interceptor.Insure(nil == err).
 		CodeMessage(_codeMessage.ErrSqlTxRollback).
 		Message(err).
 		Do()
