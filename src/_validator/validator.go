@@ -189,6 +189,15 @@ func (this *String) EnsureRegexp(pattern string) *String {
 		Do()
 	return this
 }
+func (this *String) EnsureRegexpIfNotEmpty(pattern string) *String {
+	if !_is.Empty(this.value) {
+		_interceptor.Insure(regexp.MustCompile(pattern).MatchString(this.value)).
+			CodeMessage(this.codeMessage).
+			Data(map[string]interface{}{this.name: this.value}).
+			Do()
+	}
+	return this
+}
 func (this *String) Bool() *Bool {
 	return NewBool(this.name, this.value)
 }
