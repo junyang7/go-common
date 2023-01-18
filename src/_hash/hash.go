@@ -65,3 +65,12 @@ func HmacSha256(data string, key string) string {
 		Do()
 	return hex.EncodeToString(h.Sum(nil))
 }
+func HmacSha512(data string, key string) string {
+	h := hmac.New(sha512.New, []byte(key))
+	_, err := h.Write([]byte(data))
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrHashHashWrite).
+		Message(err).
+		Do()
+	return hex.EncodeToString(h.Sum(nil))
+}
