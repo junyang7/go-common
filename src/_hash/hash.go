@@ -58,3 +58,12 @@ func HmacSha1(data string, key string) string {
 		Do()
 	return url.QueryEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
 }
+func HmacSha256(data string, key string) string {
+	h := hmac.New(sha256.New, []byte(key))
+	_, err := h.Write([]byte(data))
+	_interceptor.Insure(nil == err).
+		CodeMessage(_codeMessage.ErrHashHashWrite).
+		Message(err).
+		Do()
+	return url.QueryEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
+}
