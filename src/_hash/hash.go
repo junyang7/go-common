@@ -6,11 +6,9 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
-	"encoding/base64"
 	"encoding/hex"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_interceptor"
-	"net/url"
 )
 
 func Md5(data string) string {
@@ -56,7 +54,7 @@ func HmacSha1(data string, key string) string {
 		CodeMessage(_codeMessage.ErrHashHashWrite).
 		Message(err).
 		Do()
-	return url.QueryEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
+	return hex.EncodeToString(h.Sum(nil))
 }
 func HmacSha256(data string, key string) string {
 	h := hmac.New(sha256.New, []byte(key))
@@ -65,5 +63,5 @@ func HmacSha256(data string, key string) string {
 		CodeMessage(_codeMessage.ErrHashHashWrite).
 		Message(err).
 		Do()
-	return url.QueryEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
+	return hex.EncodeToString(h.Sum(nil))
 }
