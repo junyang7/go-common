@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-var pool = map[string]*redis.Client{}
-var m = sync.RWMutex{}
+var pool map[string]*redis.Client = map[string]*redis.Client{}
+var m sync.RWMutex = sync.RWMutex{}
 
 type Machine struct {
 	Host     string `json:"host"`
