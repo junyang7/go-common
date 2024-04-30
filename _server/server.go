@@ -21,8 +21,9 @@ import (
 )
 
 type webEngine struct {
-	addr string
-	root string
+	addr  string
+	root  string
+	debug bool
 }
 
 func Web() *webEngine {
@@ -34,6 +35,10 @@ func (this *webEngine) Addr(addr string) *webEngine {
 }
 func (this *webEngine) Root(root string) *webEngine {
 	this.root = root
+	return this
+}
+func (this *webEngine) Debug(debug bool) *webEngine {
+	this.debug = debug
 	return this
 }
 func (this *webEngine) Run() {
@@ -229,7 +234,7 @@ func (this *httpEngine) Router(router *_router.Router) *httpEngine {
 }
 func (this *httpEngine) Run() {
 	http.HandleFunc("/api/", Api().Addr(this.addr).Debug(this.debug).Origin(this.origin).ServeHTTP)
-	Web().Addr(this.addr).Root(this.root).Run()
+	Web().Addr(this.addr).Root(this.root).Debug(this.debug).Run()
 }
 
 type cliEngine struct{}
