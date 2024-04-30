@@ -198,9 +198,10 @@ func (this *apiProcessor) exception(err any) {
 }
 
 type httpEngine struct {
-	addr  string
-	root  string
-	debug bool
+	addr   string
+	root   string
+	debug  bool
+	origin []string
 }
 
 func Http() *httpEngine {
@@ -218,12 +219,16 @@ func (this *httpEngine) Debug(debug bool) *httpEngine {
 	this.debug = debug
 	return this
 }
+func (this *httpEngine) Origin(origin []string) *httpEngine {
+	this.origin = origin
+	return this
+}
 func (this *httpEngine) Router(router *_router.Router) *httpEngine {
 	_router.RouterList = append(_router.RouterList, router)
 	return this
 }
 func (this *httpEngine) Run() {
-	http.HandleFunc("/api/", Api().Addr(this.addr).Debug(this.debug).ServeHTTP)
+	http.HandleFunc("/api/", Api().Addr(this.addr).Debug(this.debug).Origin(this.origin).ServeHTTP)
 	Web().Addr(this.addr).Root(this.root).Run()
 }
 
