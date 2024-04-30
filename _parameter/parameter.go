@@ -2,6 +2,8 @@ package _parameter
 
 import (
 	"git.ziji.fun/junyang/go-common/_validator"
+	"os"
+	"strings"
 )
 
 type Parameter struct {
@@ -26,4 +28,18 @@ func (this *Parameter) Bool() *_validator.Bool {
 }
 func (this *Parameter) Float64() *_validator.Float64 {
 	return _validator.NewFloat64(this.name, this.value)
+}
+func ParseByTerminal() map[string]string {
+	res := map[string]string{}
+	for k, v := range os.Args {
+		if 0 == k {
+			res["entrypoint"] = v
+			continue
+		}
+		partList := strings.Split(v, "=")
+		if 2 == len(partList) {
+			res[strings.Trim(partList[0], "-")] = partList[1]
+		}
+	}
+	return res
 }
