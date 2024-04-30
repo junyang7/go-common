@@ -14,9 +14,6 @@ import (
 	"time"
 )
 
-var pool = map[string]*sql.DB{}
-var m = sync.RWMutex{}
-
 type Machine struct {
 	Driver    string `json:"driver"`
 	Host      string `json:"host"`
@@ -26,6 +23,22 @@ type Machine struct {
 	Password  string `json:"password"`
 	Charset   string `json:"charset"`
 	Collation string `json:"collation"`
+}
+type Master struct {
+	Count       int        `json:"count"`
+	MachineList []*Machine `json:"machine_list"`
+}
+type Slaver struct {
+	Count       int        `json:"count"`
+	MachineList []*Machine `json:"machine_list"`
+}
+type Cluster struct {
+	Master *Master
+	Slaver *Slaver
+}
+type Business struct {
+	Count       int        `json:"count"`
+	ClusterList []*Cluster `json:"cluster_list"`
 }
 type Sql struct {
 	machineMaster *Machine
@@ -47,6 +60,9 @@ type Sql struct {
 	tx            *sql.Tx
 	dsn           string
 }
+
+var pool = map[string]*sql.DB{}
+var m = sync.RWMutex{}
 
 func New() *Sql {
 	return &Sql{
