@@ -175,6 +175,16 @@ func (this *Sql) AddList() string {
 	}
 	return _as.String(lastInsertId)
 }
+func (this *Sql) Add() string {
+	this.Master(true)
+	this.buildAddList()
+	res := this.execute()
+	lastInsertId, err := res.LastInsertId()
+	if nil != err {
+		panic(err)
+	}
+	return _as.String(lastInsertId)
+}
 func (this *Sql) Del() string {
 	this.Master(true)
 	this.buildDel()
@@ -371,7 +381,7 @@ func (this *Sql) buildAddList() *Sql {
 	table := this.getTable()
 	field := _list.Implode(",", fieldList)
 	this.Sql(fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", table, field, template))
-	this.Parameter(parameter)
+	this.Parameter(parameter...)
 	return this
 }
 func (this *Sql) buildDel() *Sql {
@@ -394,7 +404,7 @@ func (this *Sql) buildSet() *Sql {
 	table := this.getTable()
 	where := this.getWhere()
 	this.Sql(fmt.Sprintf("UPDATE %s SET %s%s", table, template, where))
-	this.Parameter(parameter)
+	this.Parameter(parameter...)
 	return this
 }
 func (this *Sql) buildGetList() *Sql {
