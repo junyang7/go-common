@@ -211,7 +211,12 @@ func (this *Sql) GetList() []map[string]string {
 }
 func (this *Sql) Get() map[string]string {
 	this.buildGetList()
-	return this.query()[0]
+	res := this.query()
+	if len(res) > 0 {
+		return this.query()[0]
+	} else {
+		return map[string]string{}
+	}
 }
 func (this *Sql) Count() string {
 	this.buildCount()
