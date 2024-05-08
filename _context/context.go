@@ -235,5 +235,9 @@ func (this *Context) JSON(data any) {
 	}
 	res.Time = _unixMilli.Get()
 	res.Consume = res.Time - this.TimeS
-	this.w.Write(_json.Encode(res))
+	_, _ = this.w.Write(_json.Encode(res))
+}
+func (this *Context) REDIRECT(uri string) {
+	this.w.Header().Set("Location", uri)
+	this.w.WriteHeader(301)
 }
