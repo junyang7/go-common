@@ -185,7 +185,7 @@ func (this *Sql) Add() string {
 	}
 	return _as.String(lastInsertId)
 }
-func (this *Sql) Del() string {
+func (this *Sql) Del() int64 {
 	this.Master(true)
 	this.buildDel()
 	res := this.execute()
@@ -193,9 +193,9 @@ func (this *Sql) Del() string {
 	if nil != err {
 		panic(err)
 	}
-	return _as.String(effectedRowCount)
+	return effectedRowCount
 }
-func (this *Sql) Set() string {
+func (this *Sql) Set() int64 {
 	this.Master(true)
 	this.buildSet()
 	res := this.execute()
@@ -203,7 +203,7 @@ func (this *Sql) Set() string {
 	if nil != err {
 		panic(err)
 	}
-	return _as.String(effectedRowCount)
+	return effectedRowCount
 }
 func (this *Sql) GetList() []map[string]string {
 	this.buildGetList()
@@ -213,19 +213,24 @@ func (this *Sql) Get() map[string]string {
 	this.buildGetList()
 	res := this.query()
 	if len(res) > 0 {
-		return this.query()[0]
+		return res[0]
 	} else {
 		return map[string]string{}
 	}
 }
-func (this *Sql) Count() string {
+func (this *Sql) Count() int64 {
 	this.buildCount()
-	return this.query()[0]["c"]
+	res := this.query()
+	if len(res) > 0 {
+		return _as.Int64(res[0]["c"])
+	} else {
+		return 0
+	}
 }
 func (this *Sql) Query() []map[string]string {
 	return this.query()
 }
-func (this *Sql) Execute() string {
+func (this *Sql) Execute() int64 {
 	this.Master(true)
 	sql := this.getSql()
 	res := this.execute()
@@ -234,13 +239,13 @@ func (this *Sql) Execute() string {
 		if nil != err {
 			panic(err)
 		}
-		return _as.String(lastInsertId)
+		return lastInsertId
 	}
 	effectedRowCount, err := res.RowsAffected()
 	if nil != err {
 		panic(err)
 	}
-	return _as.String(effectedRowCount)
+	return effectedRowCount
 }
 func (this *Sql) getMachine() *Machine {
 	if this.getMaster() {
