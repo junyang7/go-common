@@ -188,14 +188,13 @@ func (this *apiProcessor) exception(err any) {
 		res.Code = err.Code
 		res.Message = err.Message
 		res.Data = err.Data
-	case string:
-		res.Code = _codeMessage.ErrDefault.Code
-		res.Message = err.(string)
+		break
 	default:
 		res.Code = _codeMessage.ErrDefault.Code
-		res.Message = _codeMessage.ErrDefault.Message
+		res.Message = fmt.Sprintf("%v", err)
+		break
 	}
-	if _, file, line, ok := runtime.Caller(5); ok {
+	if _, file, line, ok := runtime.Caller(4); ok {
 		res.File = file
 		res.Line = line
 	}
