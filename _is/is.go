@@ -6,7 +6,7 @@ import (
 )
 
 // Empty 判断一个值是否是空
-// 支持：bool,int8,int16,int32,int64,int,uint8,uint16,uint32,uint64,uint,float32,float64,string,nil,[]x,map[x]x,[x]x,chan x
+// bool,int8,int16,int32,int64,int,uint8,uint16,uint32,uint64,uint,float32,float64,string,nil,[]x,map[x]x,[x]x,chan x,*x
 func Empty(value interface{}) bool {
 	var t string = fmt.Sprintf("%T", value)
 	switch t {
@@ -41,6 +41,9 @@ func Empty(value interface{}) bool {
 	case `<nil>`:
 		return true
 	}
+	if `<nil>` == fmt.Sprintf("%v", value) {
+		return true
+	}
 	v := reflect.ValueOf(value)
 	k := v.Kind().String()
 	switch k {
@@ -48,6 +51,8 @@ func Empty(value interface{}) bool {
 		return v.Len() == 0
 	case `array`:
 		return v.IsZero()
+	case `ptr`:
+		return v.IsNil()
 	}
 	return true
 }
