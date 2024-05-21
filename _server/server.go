@@ -159,6 +159,10 @@ func (this *apiProcessor) checkRouter() {
 		Message(`不支持的路由地址`).
 		Data(map[string]interface{}{`path`: path}).
 		Do()
+	_interceptor.Insure(nil != this.router.Call).
+		Message(`路由处理方法未定义`).
+		Data(map[string]interface{}{`path`: path}).
+		Do()
 }
 func (this *apiProcessor) checkRouterMethod() {
 	method := this.ctx.ServerParameter(`method`).String().Value()
