@@ -165,7 +165,7 @@ func (this *Sql) Rollback() {
 		panic(err)
 	}
 }
-func (this *Sql) AddList() string {
+func (this *Sql) AddList() int64 {
 	this.Master(true)
 	this.buildAddList()
 	res := this.execute()
@@ -173,9 +173,9 @@ func (this *Sql) AddList() string {
 	if nil != err {
 		panic(err)
 	}
-	return _as.String(lastInsertId)
+	return lastInsertId
 }
-func (this *Sql) Add() string {
+func (this *Sql) Add() int64 {
 	this.Master(true)
 	this.buildAddList()
 	res := this.execute()
@@ -183,7 +183,7 @@ func (this *Sql) Add() string {
 	if nil != err {
 		panic(err)
 	}
-	return _as.String(lastInsertId)
+	return lastInsertId
 }
 func (this *Sql) Del() int64 {
 	this.Master(true)
