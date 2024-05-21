@@ -6,7 +6,6 @@ import (
 )
 
 func TestEmpty(t *testing.T) {
-
 	{
 		{
 			var give bool
@@ -444,5 +443,4 @@ func TestEmpty(t *testing.T) {
 			_assert.Equal(t, expect, get)
 		}
 	}
-
 }
