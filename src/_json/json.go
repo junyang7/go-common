@@ -3,8 +3,10 @@ package _json
 import (
 	"encoding/json"
 	"github.com/junyang7/go-common/src/_as"
+	"github.com/junyang7/go-common/src/_file"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_parameter"
+	"strings"
 )
 
 func Encode(data interface{}) []byte {
@@ -24,21 +26,46 @@ func Decode(source []byte, target interface{}) {
 }
 
 type reader struct {
-	path string `json:"path"`
-	text string `json:"text"`
+	json interface{}
 }
 
 func New() *reader {
 	return &reader{}
 }
-func (this *reader) Path(path string) *reader {
-	this.path = path
+func (this *reader) Byte(byte []byte) *reader {
+	Decode(byte, &this.json)
 	return this
 }
 func (this *reader) Text(text string) *reader {
-	this.text = text
-	return this
+	return this.Byte([]byte(text))
+}
+func (this *reader) Path(path string) *reader {
+	return this.Byte(_file.ReadAll(path))
 }
 func (this *reader) Get(path string) *_parameter.Parameter {
-	return _parameter.New("", "")
+	o := this.json
+	pathList := strings.Split(path, ".")
+	for _, path := range pathList {
+		switch v := o.(type) {
+		case map[string]interface{}:
+			if v, exists := v[path]; exists {
+				o = v
+			} else {
+				o = nil
+				break
+			}
+		case []interface{}:
+			index := _as.Int(path)
+			if index >= 0 && index < len(v) {
+				o = v[index]
+			} else {
+				o = nil
+				break
+			}
+		default:
+			o = nil
+			break
+		}
+	}
+	return _parameter.New(path, o)
 }
