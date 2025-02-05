@@ -2,16 +2,16 @@ package _server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	pb2 "github.com/junyang7/go-common/src/_client/pb"
 	"github.com/junyang7/go-common/src/_codeMessage"
 	"github.com/junyang7/go-common/src/_context"
 	"github.com/junyang7/go-common/src/_exception"
 	"github.com/junyang7/go-common/src/_interceptor"
+	"github.com/junyang7/go-common/src/_json"
 	"github.com/junyang7/go-common/src/_list"
 	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_router"
+	pb2 "github.com/junyang7/go-common/src/_server/pb"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
@@ -289,31 +289,57 @@ func (this *rpcEngine) Run() {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	s := grpc.NewServer()
-	pb2.RegisterServiceServer(s, &rpcProcessor{})
+	pb2.RegisterServiceServer(s, &rpcCall{})
 	if err := s.Serve(l); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 }
 
-type rpcProcessor struct {
+type rpcCall struct {
 	pb2.UnimplementedServiceServer
 }
 
-func (this *rpcProcessor) Call(c context.Context, r *pb2.Request) (*pb2.Response, error) {
+func (this *rpcCall) Call(c context.Context, r *pb2.Request) (oRes *pb2.Response, oErr error) {
+
+	// 接受请求数据
+	// 处理业务逻辑
+	//fmt.Println("<====")
+	//fmt.Println(r.Header)
+	//fmt.Println(r.Body)
+	//var a map[string]interface{}
+	//_json.Decode(r.Body, &a)
+	//fmt.Println(a)
+
+	res := _response.New()
 	defer func() {
 		if err := recover(); nil != err {
-			fmt.Println(err)
+
+			// 同api处理方法
+			// 判断异常类型，拼接返回
+
+			res.Code = -1
+			res.Message = fmt.Sprintf("%v", err)
+			oRes = &pb2.Response{Response: _json.Encode(res)}
 		}
 	}()
-	b, _ := json.Marshal(struct {
-		Header interface{} `json:"header"`
-		Body   interface{} `json:"body"`
-	}{
-		Header: r.Header,
-		Body:   r.Body,
-	})
-	res := &pb2.Response{Response: b}
-	return res, nil
+
+	//// 业务逻辑返回数据
+	//// 需要处理异常
+	//res.Code = 0
+	//res.Message = "success"
+	//res.Data = map[string]string{"test": "Hello World!"}
+	//oRes = &pb2.Response{Response: _json.Encode(res)}
+
+	return oRes, oErr
+
+}
+
+type rpcCallProcessor struct {
+}
+
+func (this *rpcCallProcessor) do() (body []byte, header map[string]string) {
+	//this.checkRouter()
+	return nil, nil
 }
 
 type websocketEngine struct{}

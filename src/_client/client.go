@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-func Rpc(addr string, header map[string]string, body map[string]string) []byte {
+func Rpc(addr string, header map[string]string, body []byte) []byte {
 	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
