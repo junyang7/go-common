@@ -1,7 +1,7 @@
-package _json
+package _toml
 
 import (
-	"encoding/json"
+	"github.com/BurntSushi/toml"
 	"github.com/junyang7/go-common/src/_as"
 	"github.com/junyang7/go-common/src/_file"
 	"github.com/junyang7/go-common/src/_interceptor"
@@ -10,7 +10,7 @@ import (
 )
 
 func Encode(data interface{}) []byte {
-	b, err := json.Marshal(data)
+	b, err := toml.Marshal(data)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
@@ -20,7 +20,7 @@ func EncodeAsString(data interface{}) string {
 	return _as.String(Encode(data))
 }
 func Decode(source []byte, target interface{}) {
-	if err := json.Unmarshal(source, target); nil != err {
+	if err := toml.Unmarshal(source, target); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 }
