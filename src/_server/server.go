@@ -9,9 +9,9 @@ import (
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_json"
 	"github.com/junyang7/go-common/src/_list"
+	"github.com/junyang7/go-common/src/_pb"
 	"github.com/junyang7/go-common/src/_response"
 	"github.com/junyang7/go-common/src/_router"
-	pb2 "github.com/junyang7/go-common/src/_server/pb"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
@@ -289,17 +289,17 @@ func (this *rpcEngine) Run() {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	s := grpc.NewServer()
-	pb2.RegisterServiceServer(s, &rpcCall{})
+	_pb.RegisterServiceServer(s, &rpcCall{})
 	if err := s.Serve(l); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 }
 
 type rpcCall struct {
-	pb2.UnimplementedServiceServer
+	_pb.UnimplementedServiceServer
 }
 
-func (this *rpcCall) Call(c context.Context, r *pb2.Request) (oRes *pb2.Response, oErr error) {
+func (this *rpcCall) Call(c context.Context, r *_pb.Request) (oRes *_pb.Response, oErr error) {
 
 	// 接受请求数据
 	// 处理业务逻辑
@@ -319,7 +319,7 @@ func (this *rpcCall) Call(c context.Context, r *pb2.Request) (oRes *pb2.Response
 
 			res.Code = -1
 			res.Message = fmt.Sprintf("%v", err)
-			oRes = &pb2.Response{Response: _json.Encode(res)}
+			oRes = &_pb.Response{Response: _json.Encode(res)}
 		}
 	}()
 

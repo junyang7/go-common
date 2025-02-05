@@ -5,11 +5,11 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/junyang7/go-common/src/_as"
-	pb2 "github.com/junyang7/go-common/src/_client/pb"
 	"github.com/junyang7/go-common/src/_interceptor"
 	"github.com/junyang7/go-common/src/_is"
 	"github.com/junyang7/go-common/src/_json"
 	"github.com/junyang7/go-common/src/_list"
+	"github.com/junyang7/go-common/src/_pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
@@ -31,7 +31,7 @@ func Rpc(addr string, header map[string]string, body []byte) []byte {
 	}(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := pb2.NewServiceClient(conn).Call(ctx, &pb2.Request{
+	r, err := _pb.NewServiceClient(conn).Call(ctx, &_pb.Request{
 		Header: header,
 		Body:   body,
 	})
