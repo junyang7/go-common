@@ -14,5 +14,5 @@ func New(code int, message string) *CodeMessage {
 
 var (
 	ErrNone    = New(0, "success")
-	ErrDefault = New(1, "something goes wrong...!!!")
+	ErrDefault = New(-1, "something goes wrong...!!!")
 )

@@ -36,7 +36,7 @@ func TestErrNone(t *testing.T) {
 }
 func TestErrDefault(t *testing.T) {
 	{
-		var expect int = 1
+		var expect int = -1
 		get := ErrDefault.Code
 		_assert.Equal(t, expect, get)
 	}
