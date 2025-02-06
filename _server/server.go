@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/junyang7/go-common/_codeMessage"
+	"github.com/junyang7/go-common/_conf"
 	"github.com/junyang7/go-common/_context"
 	"github.com/junyang7/go-common/_exception"
 	"github.com/junyang7/go-common/_interceptor"
@@ -21,6 +22,7 @@ import (
 )
 
 type webEngine struct {
+	conf  _conf.Conf
 	addr  string
 	root  string
 	debug bool
@@ -28,6 +30,10 @@ type webEngine struct {
 
 func Web() *webEngine {
 	return &webEngine{}
+}
+func (this *webEngine) Conf(conf _conf.Conf) *webEngine {
+	this.conf = conf
+	return this
 }
 func (this *webEngine) Addr(addr string) *webEngine {
 	this.addr = addr
@@ -49,6 +55,7 @@ func (this *webEngine) Run() {
 }
 
 type apiEngine struct {
+	conf    _conf.Conf
 	addr    string
 	debug   bool
 	origin  []string
@@ -57,6 +64,10 @@ type apiEngine struct {
 
 func Api() *apiEngine {
 	return &apiEngine{}
+}
+func (this *apiEngine) Conf(conf _conf.Conf) *apiEngine {
+	this.conf = conf
+	return this
 }
 func (this *apiEngine) Addr(addr string) *apiEngine {
 	this.addr = addr
@@ -87,7 +98,7 @@ func (this *apiEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := &apiProcessor{
 		w:      w,
 		r:      r,
-		ctx:    _context.New(w, r, true),
+		ctx:    _context.New(w, r, this.conf, this.debug),
 		origin: this.origin,
 	}
 	p.do()
@@ -206,6 +217,7 @@ func (this *apiProcessor) exception(err any) {
 }
 
 type httpEngine struct {
+	conf   _conf.Conf
 	addr   string
 	root   string
 	debug  bool
@@ -214,6 +226,10 @@ type httpEngine struct {
 
 func Http() *httpEngine {
 	return &httpEngine{}
+}
+func (this *httpEngine) Conf(conf _conf.Conf) *httpEngine {
+	this.conf = conf
+	return this
 }
 func (this *httpEngine) Addr(addr string) *httpEngine {
 	this.addr = addr
@@ -236,7 +252,7 @@ func (this *httpEngine) Router(router *_router.Router) *httpEngine {
 	return this
 }
 func (this *httpEngine) Run() {
-	http.HandleFunc("/api/", Api().Addr(this.addr).Debug(this.debug).Origin(this.origin).ServeHTTP)
+	http.HandleFunc("/api/", Api().Conf(this.conf).Addr(this.addr).Debug(this.debug).Origin(this.origin).ServeHTTP)
 	Web().Addr(this.addr).Root(this.root).Debug(this.debug).Run()
 }
 
@@ -259,6 +275,7 @@ func Job() *jobEngine {
 }
 
 type rpcEngine struct {
+	conf    _conf.Conf
 	network string
 	addr    string
 	debug   bool
@@ -266,6 +283,10 @@ type rpcEngine struct {
 
 func Rpc() *rpcEngine {
 	return &rpcEngine{}
+}
+func (this *rpcEngine) Conf(conf _conf.Conf) *rpcEngine {
+	this.conf = conf
+	return this
 }
 func (this *rpcEngine) Network(network string) *rpcEngine {
 	this.network = network

@@ -3,6 +3,7 @@ package _context
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/junyang7/go-common/_conf"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_json"
 	"github.com/junyang7/go-common/_parameter"
@@ -18,6 +19,7 @@ type Context struct {
 	TimeS   int64
 	w       http.ResponseWriter
 	r       *http.Request
+	conf    _conf.Conf
 	debug   bool
 	STORE   map[string]interface{}
 	GET     map[string]string
@@ -30,11 +32,12 @@ type Context struct {
 	FILE    map[string][]*multipart.FileHeader
 }
 
-func New(w http.ResponseWriter, r *http.Request, debug bool) *Context {
+func New(w http.ResponseWriter, r *http.Request, conf _conf.Conf, debug bool) *Context {
 	this := &Context{
 		TimeS:   _unixMilli.Get(),
 		w:       w,
 		r:       r,
+		conf:    conf,
 		debug:   debug,
 		STORE:   map[string]interface{}{},
 		GET:     map[string]string{},
@@ -241,4 +244,7 @@ func (this *Context) JSON(data any) {
 func (this *Context) REDIRECT(uri string) {
 	this.w.Header().Set("Location", uri)
 	this.w.WriteHeader(301)
+}
+func (this *Context) Conf(path string) *_parameter.Parameter {
+	return this.conf.Get(path)
 }
