@@ -62,6 +62,14 @@ func (this *reader) Get(path string) *_parameter.Parameter {
 				o = nil
 			}
 			break
+		case []map[string]interface{}:
+			index := _as.Int(path)
+			if index >= 0 && index < len(v) {
+				o = v[index]
+			} else {
+				o = nil
+			}
+			break
 		default:
 			o = nil
 			break
