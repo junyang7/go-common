@@ -3,6 +3,7 @@ package _toml
 import (
 	"github.com/BurntSushi/toml"
 	"github.com/junyang7/go-common/_as"
+	"github.com/junyang7/go-common/_conf"
 	"github.com/junyang7/go-common/_file"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_parameter"
@@ -29,17 +30,17 @@ type reader struct {
 	v interface{}
 }
 
-func New() *reader {
+func New() _conf.Conf {
 	return &reader{}
 }
-func (this *reader) Byte(byte []byte) *reader {
+func (this *reader) Byte(byte []byte) _conf.Conf {
 	Decode(byte, &this.v)
 	return this
 }
-func (this *reader) Text(text string) *reader {
+func (this *reader) Text(text string) _conf.Conf {
 	return this.Byte([]byte(text))
 }
-func (this *reader) Path(path string) *reader {
+func (this *reader) File(path string) _conf.Conf {
 	return this.Byte(_file.ReadAll(path))
 }
 func (this *reader) Get(path string) *_parameter.Parameter {

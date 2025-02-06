@@ -1,23 +1,39 @@
 package _conf
 
-import "github.com/junyang7/go-common/_sql"
+import (
+	"github.com/junyang7/go-common/_json"
+	"github.com/junyang7/go-common/_parameter"
+	"github.com/junyang7/go-common/_toml"
+	"sync"
+)
 
-type conf struct {
-	Env   string
-	Debug bool
-	Http  struct {
-		Addr   string
-		Root   string
-		Origin []string
-	}
-	Sql   map[string]*_sql.Business
-	Email struct {
-		Host     string
-		Port     int
-		Username string
-		Password string
-		From     string
-	}
+type Conf interface {
+	Byte(byte []byte) Conf
+	Text(text string) Conf
+	File(path string) Conf
+	Get(path string) *_parameter.Parameter
 }
 
-var Conf = &conf{}
+var (
+	conf  Conf
+	mutex sync.Mutex
+)
+
+func Load(path string, format string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	switch format {
+	case "toml":
+		conf = _toml.New().File(path)
+	case "json":
+		conf = _json.New().File(path)
+	}
+}
+func Reload(path string, format string) {
+	Load(path, format)
+}
+func Get(path string) *_parameter.Parameter {
+	mutex.Lock()
+	defer mutex.Unlock()
+	return conf.Get(path)
+}
