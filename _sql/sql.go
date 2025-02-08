@@ -5,11 +5,13 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/junyang7/go-common/_as"
+	"github.com/junyang7/go-common/_conf"
 	"github.com/junyang7/go-common/_dict"
 	"github.com/junyang7/go-common/_interceptor"
-	"github.com/junyang7/go-common/_is"
+	"github.com/junyang7/go-common/_json"
 	"github.com/junyang7/go-common/_list"
 	_ "github.com/mattn/go-sqlite3"
+	"math/rand"
 	"strings"
 	"sync"
 	"time"
@@ -25,45 +27,88 @@ type Machine struct {
 	Charset   string `json:"charset"`
 	Collation string `json:"collation"`
 }
-type Master struct {
-	Count       int        `json:"count"`
-	MachineList []*Machine `json:"machine_list"`
-}
-type Slaver struct {
-	Count       int        `json:"count"`
-	MachineList []*Machine `json:"machine_list"`
-}
-type Cluster struct {
-	Master *Master
-	Slaver *Slaver
-}
 type Business struct {
-	Count       int        `json:"count"`
-	ClusterList []*Cluster `json:"cluster_list"`
-}
-type Sql struct {
-	machineMaster *Machine
-	machineSlaver *Machine
-	driver        string
-	table         string
-	sql           string
-	parameter     []interface{}
-	master        bool
-	where         string
-	field         string
-	index         string
-	offset        int
-	limit         int
-	order         string
-	group         string
-	rowList       []map[string]interface{}
-	transaction   bool
-	tx            *sql.Tx
-	dsn           string
+	Master []*Machine `json:"master"`
+	Slaver []*Machine `json:"slaver"`
 }
 
-var pool = map[string]*sql.DB{}
+var poolDict = map[string][]*sql.DB{}
 var m = sync.RWMutex{}
+
+func getPoolDictName(business string, master bool) string {
+	poolDictName := business + "."
+	if master {
+		poolDictName += "master"
+	} else {
+		poolDictName += "slaver"
+	}
+	return poolDictName
+}
+func getDsn(machine *Machine) string {
+	var dsn string
+	switch machine.Driver {
+	case "mysql":
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", machine.Username, machine.Password, machine.Host, machine.Port, machine.Database)
+	case "sqlite3":
+		dsn = machine.Database
+	default:
+		_interceptor.Insure(false).Message(`driver is not support now`).Do()
+	}
+	return dsn
+}
+func open(machine *Machine) (db *sql.DB) {
+	dsn := getDsn(machine)
+	db, err := sql.Open(machine.Driver, dsn)
+	if nil != err {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	if err := db.Ping(); nil != err {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	db.SetMaxOpenConns(50)
+	db.SetConnMaxIdleTime(1 * time.Hour)
+	db.SetConnMaxLifetime(1 * time.Hour)
+	return db
+}
+func Load() {
+	raw := _conf.Get("sql").Value()
+	var businessList map[string]*Business
+	_json.Decode(_json.Encode(raw), &businessList)
+	if len(businessList) == 0 {
+		return
+	}
+	for business, ms := range businessList {
+		for _, machine := range ms.Master {
+			poolDictName := getPoolDictName(business, true)
+			poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
+		}
+		for _, machine := range ms.Slaver {
+			poolDictName := getPoolDictName(business, false)
+			poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
+		}
+	}
+}
+
+type Sql struct {
+	business          string
+	masterMachineList []*Machine
+	slaverMachineList []*Machine
+	table             string
+	sql               string
+	parameter         []interface{}
+	master            bool
+	where             string
+	field             string
+	index             string
+	offset            int
+	limit             int
+	order             string
+	group             string
+	rowList           []map[string]interface{}
+	//transaction   bool
+	tx *sql.Tx
+	//dsn           string
+}
 
 func New() *Sql {
 	return &Sql{
@@ -71,29 +116,8 @@ func New() *Sql {
 		rowList:   []map[string]interface{}{},
 	}
 }
-func (this *Sql) Machine(machine *Machine) *Sql {
-	this.machineMaster = machine
-	this.machineSlaver = machine
-	return this
-}
-func (this *Sql) MachineMaster(machineMaster *Machine) *Sql {
-	this.machineMaster = machineMaster
-	return this
-}
-func (this *Sql) MachineSlaver(machineSlaver *Machine) *Sql {
-	this.machineSlaver = machineSlaver
-	return this
-}
-func (this *Sql) Driver(driver string) *Sql {
-	this.driver = driver
-	return this
-}
-func (this *Sql) Dsn(dsn string) *Sql {
-	this.dsn = dsn
-	return this
-}
-func (this *Sql) Table(table string) *Sql {
-	this.table = table
+func (this *Sql) Business(business string) *Sql {
+	this.business = business
 	return this
 }
 func (this *Sql) Sql(sql string) *Sql {
@@ -104,8 +128,28 @@ func (this *Sql) Parameter(parameter ...interface{}) *Sql {
 	this.parameter = parameter
 	return this
 }
+func (this *Sql) Query() []map[string]string {
+	return this.query()
+}
+func (this *Sql) Machine(machine *Machine) *Sql {
+	this.masterMachineList = append(this.masterMachineList, machine)
+	this.slaverMachineList = append(this.slaverMachineList, machine)
+	return this
+}
+func (this *Sql) MasterMachine(machine *Machine) *Sql {
+	this.masterMachineList = append(this.masterMachineList, machine)
+	return this
+}
+func (this *Sql) SlaverMachine(machine *Machine) *Sql {
+	this.slaverMachineList = append(this.slaverMachineList, machine)
+	return this
+}
 func (this *Sql) Master(master bool) *Sql {
 	this.master = master
+	return this
+}
+func (this *Sql) Table(table string) *Sql {
+	this.table = table
 	return this
 }
 func (this *Sql) Where(where string) *Sql {
@@ -228,9 +272,6 @@ func (this *Sql) Count() int64 {
 		return 0
 	}
 }
-func (this *Sql) Query() []map[string]string {
-	return this.query()
-}
 func (this *Sql) Execute() int64 {
 	this.Master(true)
 	sql := this.getSql()
@@ -247,12 +288,6 @@ func (this *Sql) Execute() int64 {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	return effectedRowCount
-}
-func (this *Sql) getMachine() *Machine {
-	if this.getMaster() {
-		return this.machineMaster
-	}
-	return this.machineSlaver
 }
 func (this *Sql) getSql() string {
 	return strings.TrimSpace(this.sql)
@@ -314,70 +349,51 @@ func (this *Sql) getGroup() string {
 func (this *Sql) getRowList() []map[string]interface{} {
 	return this.rowList
 }
-func (this *Sql) getDriver() string {
-	if _is.Empty(this.driver) {
-		machine := this.getMachine()
-		if _is.Empty(machine) {
-			_interceptor.Insure(false).Message(`machine is empty`).Do()
-		}
-		if _is.Empty(machine.Driver) {
-			_interceptor.Insure(false).Message(`driver is empty`).Do()
-		}
-		this.driver = machine.Driver
-	}
-	return this.driver
+func (this *Sql) getMasterMachineList() []*Machine {
+	return this.masterMachineList
 }
-func (this *Sql) getDsn() string {
-	if _is.Empty(this.dsn) {
-		machine := this.getMachine()
-		if _is.Empty(machine) {
-			_interceptor.Insure(false).Message(`machine is empty`).Do()
-		}
-		if _is.Empty(machine.Driver) {
-			_interceptor.Insure(false).Message(`driver is empty`).Do()
-		}
-		switch machine.Driver {
-		case "mysql":
-			this.dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", machine.Username, machine.Password, machine.Host, machine.Port, machine.Database)
-			break
-		case "sqlite3":
-			this.dsn = machine.Database
-			break
-		default:
-			_interceptor.Insure(false).Message(`driver is not support now`).Do()
-		}
-	}
-	return this.dsn
+func (this *Sql) getSlaverMachineList() []*Machine {
+	return this.slaverMachineList
+}
+func (this *Sql) getBusiness() string {
+	return this.business
 }
 func (this *Sql) getPool() *sql.DB {
-	dsn := this.getDsn()
-	driver := this.getDriver()
+	business := this.getBusiness()
+	master := this.getMaster()
+	poolDictName := getPoolDictName(business, master)
 	var db *sql.DB
+	var dbList []*sql.DB
 	var ok bool
 	m.RLock()
-	db, ok = pool[dsn]
+	dbList, ok = poolDict[poolDictName]
 	m.RUnlock()
 	if ok {
-		return db
+		r := rand.Intn(len(dbList))
+		return dbList[r]
 	}
 	m.Lock()
 	defer m.Unlock()
-	db, ok = pool[dsn]
+	dbList, ok = poolDict[poolDictName]
 	if ok {
+		r := rand.Intn(len(dbList))
+		return dbList[r]
+	}
+	var machineList []*Machine
+	if master {
+		machineList = this.getMasterMachineList()
+	} else {
+		machineList = this.getSlaverMachineList()
+	}
+	if len(machineList) > 0 {
+		r := rand.Intn(len(machineList))
+		machine := machineList[r]
+		db = open(machine)
+		poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
 		return db
 	}
-	db, err := sql.Open(driver, dsn)
-	if nil != err {
-		_interceptor.Insure(false).Message(err).Do()
-	}
-	if err := db.Ping(); nil != err {
-		_interceptor.Insure(false).Message(err).Do()
-	}
-	db.SetMaxOpenConns(50)
-	db.SetConnMaxIdleTime(1 * time.Hour)
-	db.SetConnMaxLifetime(1 * time.Hour)
-	pool[dsn] = db
-	return db
+	_interceptor.Insure(false).Message("没有找到sql相关配置").Do()
+	return nil
 }
 func (this *Sql) buildAddList() *Sql {
 	rowList := this.getRowList()
