@@ -29,6 +29,9 @@ func (this *Parameter) Bool() *_validator.Bool {
 func (this *Parameter) Float64() *_validator.Float64 {
 	return _validator.NewFloat64(this.name, this.value)
 }
+func (this *Parameter) Value() interface{} {
+	return this.value
+}
 func ParseByTerminal() map[string]string {
 	res := map[string]string{}
 	for k, v := range os.Args {
