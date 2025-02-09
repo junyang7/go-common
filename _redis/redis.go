@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/junyang7/go-common/_as"
+	"github.com/junyang7/go-common/_conf"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_is"
+	"github.com/junyang7/go-common/_json"
 	"github.com/redis/go-redis/v9"
+	"math/rand"
 	"sync"
 	"time"
 )
-
-var pool map[string]*redis.Client = map[string]*redis.Client{}
-var m sync.RWMutex = sync.RWMutex{}
 
 type Machine struct {
 	Host     string `json:"host"`
@@ -21,13 +21,64 @@ type Machine struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+type Business struct {
+	Master []*Machine `json:"master"`
+	Slaver []*Machine `json:"slaver"`
+}
+
+var poolDict = map[string][]*redis.Client{}
+var m = sync.RWMutex{}
+
+func getPoolDictName(business string, master bool) string {
+	poolDictName := business + "."
+	if master {
+		poolDictName += "master"
+	} else {
+		poolDictName += "slaver"
+	}
+	return poolDictName
+}
+func getDsn(machine *Machine) string {
+	var dsn string
+	dsn = fmt.Sprintf("redis://%s:%s@%s:%s/%s", machine.Username, machine.Password, machine.Host, machine.Port, machine.Database)
+	return dsn
+}
+func open(machine *Machine) (pool *redis.Client) {
+	dsn := getDsn(machine)
+	opt, err := redis.ParseURL(dsn)
+	if nil != err {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	opt.PoolSize = 50
+	opt.MinIdleConns = 5
+	pool = redis.NewClient(opt)
+	return pool
+}
+func Load() {
+	raw := _conf.Get("redis").Value()
+	var businessList map[string]*Business
+	_json.Decode(_json.Encode(raw), &businessList)
+	if len(businessList) == 0 {
+		return
+	}
+	for business, ms := range businessList {
+		for _, machine := range ms.Master {
+			poolDictName := getPoolDictName(business, true)
+			poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
+		}
+		for _, machine := range ms.Slaver {
+			poolDictName := getPoolDictName(business, false)
+			poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
+		}
+	}
+}
 
 type Redis struct {
-	machineMaster *Machine
-	machineSlaver *Machine
-	master        bool
-	dsn           string
-	context       context.Context
+	business          string
+	masterMachineList []*Machine
+	slaverMachineList []*Machine
+	master            bool
+	context           context.Context
 }
 
 func New() *Redis {
@@ -39,71 +90,75 @@ func (this *Redis) Context(context context.Context) *Redis {
 	this.context = context
 	return this
 }
+func (this *Redis) Business(business string) *Redis {
+	this.business = business
+	return this
+}
 func (this *Redis) Machine(machine *Machine) *Redis {
-	this.machineMaster = machine
-	this.machineSlaver = machine
+	this.masterMachineList = append(this.masterMachineList, machine)
+	this.slaverMachineList = append(this.slaverMachineList, machine)
 	return this
 }
-func (this *Redis) MachineMaster(machineMaster *Machine) *Redis {
-	this.machineMaster = machineMaster
+func (this *Redis) MasterMachine(machine *Machine) *Redis {
+	this.masterMachineList = append(this.masterMachineList, machine)
 	return this
 }
-func (this *Redis) MachineSlaver(machineSlaver *Machine) *Redis {
-	this.machineSlaver = machineSlaver
-	return this
-}
-func (this *Redis) Dsn(dsn string) *Redis {
-	this.dsn = dsn
+func (this *Redis) SlaverMachine(machine *Machine) *Redis {
+	this.slaverMachineList = append(this.slaverMachineList, machine)
 	return this
 }
 func (this *Redis) Master(master bool) *Redis {
 	this.master = master
 	return this
 }
-func (this *Redis) getMachine() *Machine {
-	if this.getMaster() {
-		return this.machineMaster
-	}
-	return this.machineSlaver
-}
 func (this *Redis) getMaster() bool {
 	return this.master
 }
-func (this *Redis) getDsn() string {
-	if _is.Empty(this.dsn) {
-		machine := this.getMachine()
-		if _is.Empty(machine) {
-			_interceptor.Insure(false).Message(`machine is empty`).Do()
-		}
-		this.dsn = fmt.Sprintf("redis://%s:%s@%s:%s/%s", machine.Username, machine.Password, machine.Host, machine.Port, machine.Database)
-	}
-	return this.dsn
+func (this *Redis) getBusiness() string {
+	return this.business
+}
+func (this *Redis) getMasterMachineList() []*Machine {
+	return this.masterMachineList
+}
+func (this *Redis) getSlaverMachineList() []*Machine {
+	return this.slaverMachineList
 }
 func (this *Redis) getPool() *redis.Client {
-	dsn := this.getDsn()
-	var db *redis.Client
+	business := this.getBusiness()
+	master := this.getMaster()
+	poolDictName := getPoolDictName(business, master)
+	var pool *redis.Client
+	var poolList []*redis.Client
 	var ok bool
 	m.RLock()
-	db, ok = pool[dsn]
+	poolList, ok = poolDict[poolDictName]
 	m.RUnlock()
 	if ok {
-		return db
+		r := rand.Intn(len(poolList))
+		return poolList[r]
 	}
 	m.Lock()
 	defer m.Unlock()
-	db, ok = pool[dsn]
+	poolList, ok = poolDict[poolDictName]
 	if ok {
-		return db
+		r := rand.Intn(len(poolList))
+		return poolList[r]
 	}
-	opt, err := redis.ParseURL(dsn)
-	if nil != err {
-		_interceptor.Insure(false).Message(err).Do()
+	var machineList []*Machine
+	if master {
+		machineList = this.getMasterMachineList()
+	} else {
+		machineList = this.getSlaverMachineList()
 	}
-	opt.PoolSize = 50
-	opt.MinIdleConns = 5
-	db = redis.NewClient(opt)
-	pool[dsn] = db
-	return pool[dsn]
+	if len(machineList) > 0 {
+		r := rand.Intn(len(machineList))
+		machine := machineList[r]
+		pool = open(machine)
+		poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
+		return pool
+	}
+	_interceptor.Insure(false).Message("没有找到相关配置").Do()
+	return nil
 }
 func (this *Redis) getContext() context.Context {
 	if _is.Empty(this.context) {
