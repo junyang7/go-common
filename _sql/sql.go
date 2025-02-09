@@ -56,19 +56,19 @@ func getDsn(machine *Machine) string {
 	}
 	return dsn
 }
-func open(machine *Machine) (db *sql.DB) {
+func open(machine *Machine) (pool *sql.DB) {
 	dsn := getDsn(machine)
-	db, err := sql.Open(machine.Driver, dsn)
+	pool, err := sql.Open(machine.Driver, dsn)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
-	if err := db.Ping(); nil != err {
+	if err := pool.Ping(); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
-	db.SetMaxOpenConns(50)
-	db.SetConnMaxIdleTime(1 * time.Hour)
-	db.SetConnMaxLifetime(1 * time.Hour)
-	return db
+	pool.SetMaxOpenConns(50)
+	pool.SetConnMaxIdleTime(1 * time.Hour)
+	pool.SetConnMaxLifetime(1 * time.Hour)
+	return pool
 }
 func Load() {
 	raw := _conf.Get("sql").Value()
@@ -362,22 +362,22 @@ func (this *Sql) getPool() *sql.DB {
 	business := this.getBusiness()
 	master := this.getMaster()
 	poolDictName := getPoolDictName(business, master)
-	var db *sql.DB
-	var dbList []*sql.DB
+	var pool *sql.DB
+	var poolList []*sql.DB
 	var ok bool
 	m.RLock()
-	dbList, ok = poolDict[poolDictName]
+	poolList, ok = poolDict[poolDictName]
 	m.RUnlock()
 	if ok {
-		r := rand.Intn(len(dbList))
-		return dbList[r]
+		r := rand.Intn(len(poolList))
+		return poolList[r]
 	}
 	m.Lock()
 	defer m.Unlock()
-	dbList, ok = poolDict[poolDictName]
+	poolList, ok = poolDict[poolDictName]
 	if ok {
-		r := rand.Intn(len(dbList))
-		return dbList[r]
+		r := rand.Intn(len(poolList))
+		return poolList[r]
 	}
 	var machineList []*Machine
 	if master {
@@ -388,11 +388,11 @@ func (this *Sql) getPool() *sql.DB {
 	if len(machineList) > 0 {
 		r := rand.Intn(len(machineList))
 		machine := machineList[r]
-		db = open(machine)
+		pool = open(machine)
 		poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
-		return db
+		return pool
 	}
-	_interceptor.Insure(false).Message("没有找到sql相关配置").Do()
+	_interceptor.Insure(false).Message("没有找到相关配置").Do()
 	return nil
 }
 func (this *Sql) buildAddList() *Sql {
