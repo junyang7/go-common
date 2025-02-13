@@ -1,6 +1,7 @@
 package _string
 
 import (
+	"fmt"
 	"github.com/junyang7/go-common/_assert"
 	"testing"
 )
@@ -27,4 +28,7 @@ func TestPadRight(t *testing.T) {
 		get := PadRight(base, padLen, padChar)
 		_assert.Equal(t, expect, get)
 	}
+}
+func TestToUpperCamelCase(t *testing.T) {
+	fmt.Println(ToUpperCamelCase("__world_example_A_0"))
 }

@@ -1,6 +1,9 @@
 package _string
 
-import "strings"
+import (
+	"strings"
+	"unicode"
+)
 
 const L int = 1
 const R int = 2
@@ -25,4 +28,13 @@ func PadRight(s string, l int, ps string) string {
 }
 func ReplaceAll(s string, old string, new string) string {
 	return strings.Replace(s, old, new, -1)
+}
+func ToUpperCamelCase(s string) string {
+	partList := strings.Split(s, "_")
+	for index, part := range partList {
+		if len(part) > 0 && unicode.IsLower(rune(part[0])) {
+			partList[index] = strings.ToUpper(part[0:1]) + part[1:]
+		}
+	}
+	return strings.Join(partList, "")
 }
