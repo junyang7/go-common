@@ -12,6 +12,7 @@ import (
 	"github.com/junyang7/go-common/_list"
 	_ "github.com/mattn/go-sqlite3"
 	"math/rand"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -108,10 +109,9 @@ type Sql struct {
 	order             string
 	group             string
 	rowList           []map[string]interface{}
-	//transaction   bool
-	tx   *sql.Tx
-	pool *sql.DB
-	//dsn           string
+	tx                *sql.Tx
+	pool              *sql.DB
+	bind              interface{}
 }
 
 func New() *Sql {
@@ -196,17 +196,24 @@ func (this *Sql) Row(row map[string]interface{}) *Sql {
 	this.rowList = []map[string]interface{}{row}
 	return this
 }
+func (this *Sql) Bind(bind interface{}) *Sql {
+	this.bind = bind
+	return this
+}
 func (this *Sql) Tx(tx *sql.Tx) *Sql {
 	this.tx = tx
 	return this
 }
-func (this *Sql) BeginTransaction() *sql.Tx {
-	this.Master(true)
-	tx, err := this.getPool().Begin()
-	if nil != err {
-		_interceptor.Insure(false).Message(err).Do()
+func (this *Sql) Begin() *sql.Tx {
+	if nil == this.tx {
+		this.Master(true)
+		tx, err := this.getPool().Begin()
+		if nil != err {
+			_interceptor.Insure(false).Message(err).Do()
+		}
+		this.Tx(tx)
 	}
-	return tx
+	return this.tx
 }
 func (this *Sql) Commit() {
 	if err := this.tx.Commit(); nil != err {
@@ -217,6 +224,17 @@ func (this *Sql) Rollback() {
 	if err := this.tx.Rollback(); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
+}
+func (this *Sql) Transaction(group func(tx *sql.Tx)) {
+	this.Begin()
+	defer func() {
+		if err := recover(); nil != err {
+			this.Rollback()
+			_interceptor.Insure(false).Message(err).Do()
+		}
+	}()
+	group(this.tx)
+	this.Commit()
 }
 func (this *Sql) AddList() int64 {
 	this.Master(true)
@@ -512,6 +530,77 @@ func (this *Sql) query() []map[string]string {
 			row[fieldList[i]] = string(*(value.(interface{}).(*sql.RawBytes)))
 		}
 		res = append(res, row)
+	}
+	if nil != this.bind {
+		bind := reflect.ValueOf(this.bind)
+		if bind.Kind() == reflect.Ptr {
+			switch bind.Elem().Kind() {
+			case reflect.Slice:
+				if bind.Elem().Type().Elem().Kind() == reflect.Struct {
+					for _, row := range res {
+						v := reflect.New(bind.Elem().Type().Elem()).Elem()
+						t := v.Type()
+						for i := 0; i < v.NumField(); i++ {
+							f := v.Field(i)
+							n := t.Field(i).Tag.Get("sql")
+							if _list.In(n, fieldList) {
+								switch f.Kind() {
+								case reflect.String:
+									f.SetString(row[n])
+									break
+								case reflect.Bool:
+									f.SetBool(_as.Bool(row[n]))
+									break
+								case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+									f.SetInt(_as.Int64(row[n]))
+									break
+								case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+									f.SetUint(_as.Uint64(row[n]))
+									break
+								case reflect.Float32, reflect.Float64:
+									f.SetFloat(_as.Float64(row[n]))
+									break
+								default:
+									_interceptor.Insure(false).Message("数据类型不支持").Do()
+								}
+							}
+						}
+						bind.Elem().Set(reflect.Append(bind.Elem(), v))
+					}
+				}
+				break
+			case reflect.Struct:
+				v := bind.Elem()
+				t := v.Type()
+				row := res[0]
+				for i := 0; i < v.NumField(); i++ {
+					f := v.Field(i)
+					n := t.Field(i).Tag.Get("sql")
+					if _list.In(n, fieldList) {
+						switch f.Kind() {
+						case reflect.String:
+							f.SetString(row[n])
+							break
+						case reflect.Bool:
+							f.SetBool(_as.Bool(row[n]))
+							break
+						case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+							f.SetInt(_as.Int64(row[n]))
+							break
+						case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+							f.SetUint(_as.Uint64(row[n]))
+							break
+						case reflect.Float32, reflect.Float64:
+							f.SetFloat(_as.Float64(row[n]))
+							break
+						default:
+							_interceptor.Insure(false).Message("数据类型不支持").Do()
+						}
+					}
+				}
+				break
+			}
+		}
 	}
 	return res
 }
