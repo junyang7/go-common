@@ -88,6 +88,9 @@ func Load() {
 		}
 	}
 }
+func GetPoolDict() map[string][]*sql.DB {
+	return poolDict
+}
 
 type Sql struct {
 	business          string
@@ -106,7 +109,8 @@ type Sql struct {
 	group             string
 	rowList           []map[string]interface{}
 	//transaction   bool
-	tx *sql.Tx
+	tx   *sql.Tx
+	pool *sql.DB
 	//dsn           string
 }
 
@@ -115,6 +119,10 @@ func New() *Sql {
 		parameter: []interface{}{},
 		rowList:   []map[string]interface{}{},
 	}
+}
+func (this *Sql) Pool(pool *sql.DB) *Sql {
+	this.pool = pool
+	return this
 }
 func (this *Sql) Business(business string) *Sql {
 	this.business = business
@@ -359,10 +367,12 @@ func (this *Sql) getBusiness() string {
 	return this.business
 }
 func (this *Sql) getPool() *sql.DB {
+	if nil != this.pool {
+		return this.pool
+	}
 	business := this.getBusiness()
 	master := this.getMaster()
 	poolDictName := getPoolDictName(business, master)
-	var pool *sql.DB
 	var poolList []*sql.DB
 	var ok bool
 	m.RLock()
@@ -370,14 +380,16 @@ func (this *Sql) getPool() *sql.DB {
 	m.RUnlock()
 	if ok {
 		r := rand.Intn(len(poolList))
-		return poolList[r]
+		this.pool = poolList[r]
+		return this.pool
 	}
 	m.Lock()
 	defer m.Unlock()
 	poolList, ok = poolDict[poolDictName]
 	if ok {
 		r := rand.Intn(len(poolList))
-		return poolList[r]
+		this.pool = poolList[r]
+		return this.pool
 	}
 	var machineList []*Machine
 	if master {
@@ -388,9 +400,9 @@ func (this *Sql) getPool() *sql.DB {
 	if len(machineList) > 0 {
 		r := rand.Intn(len(machineList))
 		machine := machineList[r]
-		pool = open(machine)
+		this.pool = open(machine)
 		poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
-		return pool
+		return this.pool
 	}
 	_interceptor.Insure(false).Message("没有找到相关配置").Do()
 	return nil
