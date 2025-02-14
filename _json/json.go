@@ -10,20 +10,26 @@ import (
 	"strings"
 )
 
-func Encode(data interface{}) []byte {
-	b, err := json.Marshal(data)
+func Encode(v interface{}) []byte {
+	b, err := json.Marshal(v)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	return b
 }
-func EncodeAsString(data interface{}) string {
-	return _as.String(Encode(data))
+func EncodeAsString(v interface{}) string {
+	return _as.String(Encode(v))
 }
-func Decode(source []byte, target interface{}) {
-	if err := json.Unmarshal(source, target); nil != err {
+func Decode(b []byte, v interface{}) {
+	if err := json.Unmarshal(b, v); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
+}
+func DecodeByFile(path string, v interface{}) {
+	Decode(_file.ReadAll(path), v)
+}
+func DecodeByText(text string, v interface{}) {
+	Decode([]byte(text), v)
 }
 
 type reader struct {
