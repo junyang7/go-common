@@ -188,8 +188,11 @@ func (this *apiProcessor) do() {
 			this.exception(err)
 		}
 	}()
-	this.w.Header().Add("access-control-allow-credentials", "true")
+	this.w.Header().Set("access-control-allow-credentials", "true")
 	this.checkOrigin()
+	if this.ctx.SERVER["method"] == "OPTIONS" {
+		return
+	}
 	this.checkRouter()
 	this.checkRouterMethod()
 	this.middlewareBefore()
@@ -208,6 +211,7 @@ func (this *apiProcessor) checkOrigin() {
 				headerValue += ":" + matchedList[3]
 			}
 			this.w.Header().Set("access-control-allow-origin", headerValue)
+			this.w.Header().Set("access-control-allow-Headers", "content-type, authorization")
 			return
 		}
 	}
