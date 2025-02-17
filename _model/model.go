@@ -31,7 +31,18 @@ func Build() {
 			matchedList := pattern.FindAllStringSubmatch(res[0]["Create Table"], -1)
 			fieldList := []string{}
 			for _, matched := range matchedList {
-				fieldList = append(fieldList, fmt.Sprintf("%s string `json:\"%s\"`", _string.ToUpperCamelCase(matched[1]), matched[1]))
+				fieldName := matched[1]
+				fieldType := matched[2]
+				fieldTypeGo := "string"
+				switch fieldType {
+				case "tinyint", "smallint", "mediumint", "int", "integer", "bigint":
+					fieldTypeGo = "int64"
+					break
+				case "float", "double":
+					fieldTypeGo = "float64"
+					break
+				}
+				fieldList = append(fieldList, fmt.Sprintf("%s %s `json:\"%s\" sql:\"%s\"`", _string.ToUpperCamelCase(fieldName), fieldTypeGo, fieldName, fieldName))
 			}
 			field := strings.Join(fieldList, "\n")
 			tplModel := TplModel
