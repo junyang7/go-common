@@ -9,7 +9,7 @@ import (
 func IsUsing(port int) bool {
 	handler := exec.Command(`lsof`, fmt.Sprintf(`-i:%d`, port))
 	_, err := handler.Output()
-	return err != nil
+	return nil == err // 如果 err 为 nil，表示端口正在被使用
 }
 func GetList(count int) (o []int) {
 	for i := 1; i <= 65535; i++ {
