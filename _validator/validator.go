@@ -10,51 +10,51 @@ import (
 	"strings"
 )
 
-type Int struct {
+type Int64 struct {
 	name        string
-	value       int
+	value       int64
 	codeMessage *_codeMessage.CodeMessage
 }
 
-func NewInt(name string, value interface{}) *Int {
-	return &Int{
+func NewInt64(name string, value interface{}) *Int64 {
+	return &Int64{
 		name:        name,
-		value:       _as.Int(value),
+		value:       _as.Int64(value),
 		codeMessage: _codeMessage.ErrDefault,
 	}
 }
-func (this *Int) Default(value int) *Int {
+func (this *Int64) Default(value int64) *Int64 {
 	if _is.Empty(this.value) {
 		this.value = value
 	}
 	return this
 }
-func (this *Int) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Int {
+func (this *Int64) CodeMessage(codeMessage *_codeMessage.CodeMessage) *Int64 {
 	this.codeMessage = codeMessage
 	return this
 }
-func (this *Int) EnsureMin(min int) *Int {
+func (this *Int64) EnsureMin(min int64) *Int64 {
 	_interceptor.Insure(this.value >= min).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) EnsureMax(max int) *Int {
+func (this *Int64) EnsureMax(max int64) *Int64 {
 	_interceptor.Insure(this.value <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) EnsureBetween(min int, max int) *Int {
+func (this *Int64) EnsureBetween(min int64, max int64) *Int64 {
 	_interceptor.Insure(this.value >= min && this.value <= max).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) EnsureLength(length int) *Int {
+func (this *Int64) EnsureLength(length int) *Int64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l == length).
 		CodeMessage(this.codeMessage).
@@ -62,7 +62,7 @@ func (this *Int) EnsureLength(length int) *Int {
 		Do()
 	return this
 }
-func (this *Int) EnsureLengthMin(min int) *Int {
+func (this *Int64) EnsureLengthMin(min int) *Int64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l >= min).
 		CodeMessage(this.codeMessage).
@@ -70,7 +70,7 @@ func (this *Int) EnsureLengthMin(min int) *Int {
 		Do()
 	return this
 }
-func (this *Int) EnsureLengthMax(max int) *Int {
+func (this *Int64) EnsureLengthMax(max int) *Int64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l <= max).
 		CodeMessage(this.codeMessage).
@@ -78,7 +78,7 @@ func (this *Int) EnsureLengthMax(max int) *Int {
 		Do()
 	return this
 }
-func (this *Int) EnsureLengthBetween(min int, max int) *Int {
+func (this *Int64) EnsureLengthBetween(min int, max int) *Int64 {
 	l := len(_as.String(this.value))
 	_interceptor.Insure(l >= min && l <= max).
 		CodeMessage(this.codeMessage).
@@ -86,23 +86,23 @@ func (this *Int) EnsureLengthBetween(min int, max int) *Int {
 		Do()
 	return this
 }
-func (this *Int) EnsureIn(value ...int) *Int {
+func (this *Int64) EnsureIn(value ...int64) *Int64 {
 	_interceptor.Insure(_list.In(this.value, value)).
 		CodeMessage(this.codeMessage).
 		Data(map[string]interface{}{this.name: this.value}).
 		Do()
 	return this
 }
-func (this *Int) String() *String {
+func (this *Int64) String() *String {
 	return NewString(this.name, this.value)
 }
-func (this *Int) Bool() *Bool {
+func (this *Int64) Bool() *Bool {
 	return NewBool(this.name, this.value)
 }
-func (this *Int) Float64() *Float64 {
+func (this *Int64) Float64() *Float64 {
 	return NewFloat64(this.name, this.value)
 }
-func (this *Int) Value() int {
+func (this *Int64) Value() int64 {
 	return this.value
 }
 
@@ -195,8 +195,8 @@ func (this *String) Bool() *Bool {
 func (this *String) Float64() *Float64 {
 	return NewFloat64(this.name, this.value)
 }
-func (this *String) Int() *Int {
-	return NewInt(this.name, this.value)
+func (this *String) Int64() *Int64 {
+	return NewInt64(this.name, this.value)
 }
 func (this *String) Value() string {
 	return this.value
@@ -249,8 +249,8 @@ func (this *Bool) EnsureIn(value ...bool) *Bool {
 func (this *Bool) Float64() *Float64 {
 	return NewFloat64(this.name, this.value)
 }
-func (this *Bool) Int() *Int {
-	return NewInt(this.name, this.value)
+func (this *Bool) Int64() *Int64 {
+	return NewInt64(this.name, this.value)
 }
 func (this *Bool) String() *String {
 	return NewString(this.name, this.value)
@@ -335,8 +335,8 @@ func (this *Float64) EnsureLengthBetween(min int, max int) *Float64 {
 		Do()
 	return this
 }
-func (this *Float64) Int() *Int {
-	return NewInt(this.name, this.value)
+func (this *Float64) Int64() *Int64 {
+	return NewInt64(this.name, this.value)
 }
 func (this *Float64) String() *String {
 	return NewString(this.name, this.value)
