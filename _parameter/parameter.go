@@ -17,8 +17,8 @@ func New(name string, value interface{}) *Parameter {
 		value: value,
 	}
 }
-func (this *Parameter) Int() *_validator.Int {
-	return _validator.NewInt(this.name, this.value)
+func (this *Parameter) Int64() *_validator.Int64 {
+	return _validator.NewInt64(this.name, this.value)
 }
 func (this *Parameter) String() *_validator.String {
 	return _validator.NewString(this.name, this.value)
