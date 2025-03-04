@@ -108,14 +108,14 @@ func TestString(t *testing.T) {
 	{
 		// false
 		{
-			var expect string = ""
+			var expect string = "false"
 			var give bool = false
 			get := String(give)
 			_assert.Equal(t, expect, get)
 		}
 		// true
 		{
-			var expect string = "1"
+			var expect string = "true"
 			var give bool = true
 			get := String(give)
 			_assert.Equal(t, expect, get)
@@ -123,8 +123,8 @@ func TestString(t *testing.T) {
 	}
 	// other
 	{
-		var expect string = ""
-		var give chan string = nil
+		var expect string = "<nil>"
+		var give chan string
 		get := String(give)
 		_assert.Equal(t, expect, get)
 	}
@@ -134,7 +134,7 @@ func TestBool(t *testing.T) {
 	{
 		// true
 		{
-			var expect bool = true
+			var expect bool = false
 			var give []byte = []byte("hello world!")
 			get := Bool(give)
 			_assert.Equal(t, expect, get)
@@ -152,7 +152,7 @@ func TestBool(t *testing.T) {
 		// true
 		{
 			var expect bool = true
-			var give string = "3.141592"
+			var give string = "true"
 			get := Bool(give)
 			_assert.Equal(t, expect, get)
 		}
@@ -407,7 +407,7 @@ func TestFloat64(t *testing.T) {
 			_assert.EqualByFloat(t, expect, get)
 		}
 		{
-			var expect float64 = 0
+			var expect float64 = 3.141592
 			var give []byte = []byte("3.141592")
 			get := Float64(give)
 			_assert.EqualByFloat(t, expect, get)
