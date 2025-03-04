@@ -2,7 +2,6 @@ package _base64Format
 
 import (
 	"encoding/base64"
-	"github.com/junyang7/go-common/_as"
 	"github.com/junyang7/go-common/_interceptor"
 )
 
@@ -14,5 +13,5 @@ func Decode(data string) string {
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
-	return _as.String(b)
+	return string(b)
 }
