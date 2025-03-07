@@ -31,11 +31,12 @@ func load(conf _conf.Conf) {
 }
 
 type webEngine struct {
-	debug  bool
-	host   string
-	port   string
-	origin []string
-	root   string
+	debug   bool
+	network string
+	host    string
+	port    string
+	origin  []string
+	root    string
 }
 
 func Web() *webEngine {
@@ -57,6 +58,10 @@ func (this *webEngine) Debug(debug bool) *webEngine {
 	this.debug = debug
 	return this
 }
+func (this *webEngine) Network(network string) *webEngine {
+	this.network = network
+	return this
+}
 func (this *webEngine) Host(host string) *webEngine {
 	this.host = host
 	return this
@@ -76,11 +81,23 @@ func (this *webEngine) Root(root string) *webEngine {
 func (this *webEngine) getDebug() bool {
 	return this.debug
 }
+func (this *webEngine) getNetwork() string {
+	if len(this.network) > 0 {
+		return this.network
+	}
+	return "tcp"
+}
 func (this *webEngine) getHost() string {
-	return this.host
+	if len(this.host) > 0 {
+		return this.host
+	}
+	return "0.0.0.0"
 }
 func (this *webEngine) getPort() string {
-	return this.port
+	if len(this.port) > 0 {
+		return this.port
+	}
+	return "0"
 }
 func (this *webEngine) getOrigin() []string {
 	return this.origin
@@ -92,14 +109,25 @@ func (this *webEngine) getAddr() string {
 	return fmt.Sprintf("%s:%s", this.host, this.port)
 }
 func (this *webEngine) Run() {
-	http.Handle("/", http.FileServer(http.Dir(this.getRoot())))
-	if err := http.ListenAndServe(this.getAddr(), nil); nil != err {
+	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(http.Dir(this.getRoot())))
+	server := &http.Server{
+		Handler: mux,
+	}
+	listener, err := net.Listen(this.getNetwork(), this.getAddr())
+	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
+	fmt.Printf("Server is running on: %s\n", listener.Addr().String())
+	if err := server.Serve(listener); nil != err && err != http.ErrServerClosed {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	fmt.Println("Server stopped.")
 }
 
 type apiEngine struct {
 	debug   bool
+	network string
 	host    string
 	port    string
 	origin  []string
@@ -124,6 +152,10 @@ func (this *apiEngine) Debug(debug bool) *apiEngine {
 	this.debug = debug
 	return this
 }
+func (this *apiEngine) Network(network string) *apiEngine {
+	this.network = network
+	return this
+}
 func (this *apiEngine) Host(host string) *apiEngine {
 	this.host = host
 	return this
@@ -143,11 +175,23 @@ func (this *apiEngine) Router(router *_router.Router) *apiEngine {
 func (this *apiEngine) getDebug() bool {
 	return this.debug
 }
+func (this *apiEngine) getNetwork() string {
+	if len(this.network) > 0 {
+		return this.network
+	}
+	return "tcp"
+}
 func (this *apiEngine) getHost() string {
-	return this.host
+	if len(this.host) > 0 {
+		return this.host
+	}
+	return "0.0.0.0"
 }
 func (this *apiEngine) getPort() string {
-	return this.port
+	if len(this.port) > 0 {
+		return this.port
+	}
+	return "0"
 }
 func (this *apiEngine) getOrigin() []string {
 	return this.origin
@@ -156,13 +200,20 @@ func (this *apiEngine) getAddr() string {
 	return fmt.Sprintf("%s:%s", this.host, this.port)
 }
 func (this *apiEngine) Run() {
-	this.handler = &http.Server{
-		Addr:    this.getAddr(),
-		Handler: http.HandlerFunc(this.ServeHTTP),
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/", this.ServeHTTP)
+	server := &http.Server{
+		Handler: mux,
 	}
-	if err := this.handler.ListenAndServe(); nil != err && http.ErrServerClosed != err {
+	listener, err := net.Listen(this.getNetwork(), this.getAddr())
+	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
+	fmt.Printf("Server is running on: %s\n", listener.Addr().String())
+	if err := server.Serve(listener); nil != err && err != http.ErrServerClosed {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	fmt.Println("Server stopped.")
 }
 func (this *apiEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := &apiProcessor{
@@ -291,11 +342,12 @@ func (this *apiProcessor) exception(err any) {
 }
 
 type httpEngine struct {
-	debug  bool
-	host   string
-	port   string
-	origin []string
-	root   string
+	debug   bool
+	network string
+	host    string
+	port    string
+	origin  []string
+	root    string
 }
 
 func Http() *httpEngine {
@@ -315,6 +367,10 @@ func (this *httpEngine) Load(conf _conf.Conf, business string) *httpEngine {
 }
 func (this *httpEngine) Debug(debug bool) *httpEngine {
 	this.debug = debug
+	return this
+}
+func (this *httpEngine) Network(network string) *httpEngine {
+	this.network = network
 	return this
 }
 func (this *httpEngine) Host(host string) *httpEngine {
@@ -340,11 +396,23 @@ func (this *httpEngine) Router(router *_router.Router) *httpEngine {
 func (this *httpEngine) getDebug() bool {
 	return this.debug
 }
+func (this *httpEngine) getNetwork() string {
+	if len(this.network) > 0 {
+		return this.network
+	}
+	return "tcp"
+}
 func (this *httpEngine) getHost() string {
-	return this.host
+	if len(this.host) > 0 {
+		return this.host
+	}
+	return "0.0.0.0"
 }
 func (this *httpEngine) getPort() string {
-	return this.port
+	if len(this.port) > 0 {
+		return this.port
+	}
+	return "0"
 }
 func (this *httpEngine) getOrigin() []string {
 	return this.origin
@@ -356,8 +424,20 @@ func (this *httpEngine) getAddr() string {
 	return fmt.Sprintf("%s:%s", this.host, this.port)
 }
 func (this *httpEngine) Run() {
-	http.HandleFunc("/api/", Api().Debug(this.debug).Host(this.host).Port(this.port).Origin(this.origin).ServeHTTP)
-	Web().Debug(this.debug).Host(this.host).Port(this.port).Origin(this.origin).Root(this.root).Run()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/", Api().Debug(this.debug).Host(this.host).Port(this.port).Origin(this.origin).ServeHTTP)
+	mux.Handle("/", http.FileServer(http.Dir(this.getRoot())))
+	listener, err := net.Listen(this.getNetwork(), this.getAddr())
+	if nil != err {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	fmt.Printf("Server is running on: %s\n", listener.Addr().String())
+	server := &http.Server{
+		Handler: mux,
+	}
+	if err := server.Serve(listener); nil != err && err != http.ErrServerClosed {
+		_interceptor.Insure(false).Message(err).Do()
+	}
 }
 
 type cliEngine struct{}
@@ -409,13 +489,14 @@ func (this *rpcEngine) Debug(debug bool) *rpcEngine {
 	return this
 }
 func (this *rpcEngine) Run() {
-	l, err := net.Listen(this.network, this.addr)
+	listener, err := net.Listen(this.network, this.addr)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
+	fmt.Printf("Server is running on: %s\n", listener.Addr().String())
 	s := grpc.NewServer()
 	_pb.RegisterServiceServer(s, &rpcCall{})
-	if err := s.Serve(l); nil != err {
+	if err := s.Serve(listener); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 }
