@@ -11,7 +11,6 @@ import (
 	"github.com/junyang7/go-common/_list"
 	"github.com/junyang7/go-common/_pb"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -22,7 +21,7 @@ import (
 )
 
 func Rpc(addr string, header map[string]string, body []byte) []byte {
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}

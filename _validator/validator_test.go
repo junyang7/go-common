@@ -6,24 +6,24 @@ import (
 	"testing"
 )
 
-func TestNewInt(t *testing.T) {
+func TestNewInt64(t *testing.T) {
 	// no need to test
 	t.SkipNow()
 }
-func TestInt_Default(t *testing.T) {
+func TestInt64_Default(t *testing.T) {
 	{
-		var expect int = 1000
-		get := NewInt("int", nil).Default(1000).Value()
+		var expect int64 = 1000
+		get := NewInt64("int64", nil).Default(1000).Value()
 		_assert.Equal(t, expect, get)
 	}
 }
-func TestInt_CodeMessage(t *testing.T) {
+func TestInt64_CodeMessage(t *testing.T) {
 	// no need to test
 	t.SkipNow()
 }
-func TestInt_EnsureMin(t *testing.T) {
+func TestInt64_EnsureMin(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureMin(9)
+		NewInt64("int64", 9).EnsureMin(9)
 	})()
 	(func() {
 		defer func() {
@@ -32,12 +32,12 @@ func TestInt_EnsureMin(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 9).EnsureMin(10)
+		NewInt64("int64", 9).EnsureMin(10)
 	})()
 }
-func TestInt_EnsureMax(t *testing.T) {
+func TestInt64_EnsureMax(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureMax(9)
+		NewInt64("int64", 9).EnsureMax(9)
 	})()
 	(func() {
 		defer func() {
@@ -46,12 +46,12 @@ func TestInt_EnsureMax(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 9).EnsureMax(8)
+		NewInt64("int64", 9).EnsureMax(8)
 	})()
 }
-func TestInt_EnsureBetween(t *testing.T) {
+func TestInt64_EnsureBetween(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureBetween(8, 10)
+		NewInt64("int64", 9).EnsureBetween(8, 10)
 	})()
 	(func() {
 		defer func() {
@@ -60,12 +60,12 @@ func TestInt_EnsureBetween(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 9).EnsureBetween(1, 8)
+		NewInt64("int64", 9).EnsureBetween(1, 8)
 	})()
 }
-func TestInt_EnsureLength(t *testing.T) {
+func TestInt64_EnsureLength(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureLength(1)
+		NewInt64("int64", 9).EnsureLength(1)
 	})()
 	(func() {
 		defer func() {
@@ -74,12 +74,12 @@ func TestInt_EnsureLength(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 9).EnsureLength(2)
+		NewInt64("int64", 9).EnsureLength(2)
 	})()
 }
-func TestInt_EnsureLengthMin(t *testing.T) {
+func TestInt64_EnsureLengthMin(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureLengthMin(1)
+		NewInt64("int64", 9).EnsureLengthMin(1)
 	})()
 	(func() {
 		defer func() {
@@ -88,12 +88,12 @@ func TestInt_EnsureLengthMin(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 9).EnsureLengthMin(2)
+		NewInt64("int64", 9).EnsureLengthMin(2)
 	})()
 }
-func TestInt_EnsureLengthMax(t *testing.T) {
+func TestInt64_EnsureLengthMax(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureLengthMax(1)
+		NewInt64("int64", 9).EnsureLengthMax(1)
 	})()
 	(func() {
 		defer func() {
@@ -102,12 +102,12 @@ func TestInt_EnsureLengthMax(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 99).EnsureLengthMax(1)
+		NewInt64("int64", 99).EnsureLengthMax(1)
 	})()
 }
-func TestInt_EnsureLengthBetween(t *testing.T) {
+func TestInt64_EnsureLengthBetween(t *testing.T) {
 	(func() {
-		NewInt("int", 9).EnsureLengthBetween(1, 2)
+		NewInt64("int64", 9).EnsureLengthBetween(1, 2)
 	})()
 	(func() {
 		defer func() {
@@ -116,12 +116,12 @@ func TestInt_EnsureLengthBetween(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 999).EnsureLengthBetween(1, 2)
+		NewInt64("int64", 999).EnsureLengthBetween(1, 2)
 	})()
 }
-func TestInt_EnsureIn(t *testing.T) {
+func TestInt64_EnsureIn(t *testing.T) {
 	(func() {
-		NewInt("int", 2).EnsureIn(1, 2, 3)
+		NewInt64("int64", 2).EnsureIn(1, 2, 3)
 	})()
 	(func() {
 		defer func() {
@@ -130,32 +130,32 @@ func TestInt_EnsureIn(t *testing.T) {
 			get := fmt.Sprintf("%T", err)
 			_assert.Equal(t, expect, get)
 		}()
-		NewInt("int", 4).EnsureIn(1, 2, 3)
+		NewInt64("int64", 4).EnsureIn(1, 2, 3)
 	})()
 }
-func TestInt_String(t *testing.T) {
+func TestInt64_String(t *testing.T) {
 	var expect string = "1"
-	get := NewInt("int", 1).String().Value()
+	get := NewInt64("int64", 1).String().Value()
 	_assert.Equal(t, expect, get)
 }
-func TestInt_Bool(t *testing.T) {
+func TestInt64_Bool(t *testing.T) {
 	{
 		var expect bool = true
-		get := NewInt("int", 1).Bool().Value()
+		get := NewInt64("int64", 1).Bool().Value()
 		_assert.Equal(t, expect, get)
 	}
 	{
 		var expect bool = false
-		get := NewInt("int", 0).Bool().Value()
+		get := NewInt64("int64", 0).Bool().Value()
 		_assert.Equal(t, expect, get)
 	}
 }
-func TestInt_Float64(t *testing.T) {
+func TestInt64_Float64(t *testing.T) {
 	var expect float64 = 1
-	get := NewInt("int", 1).Float64().Value()
+	get := NewInt64("int", 1).Float64().Value()
 	_assert.EqualByFloat(t, expect, get)
 }
-func TestInt_Value(t *testing.T) {
+func TestInt64_Value(t *testing.T) {
 	// no need to test
 	t.SkipNow()
 }
@@ -303,9 +303,9 @@ func TestString_Float64(t *testing.T) {
 	get := NewString("string", "3.141592").Float64().Value()
 	_assert.EqualByFloat(t, expect, get)
 }
-func TestString_Int(t *testing.T) {
-	var expect int = 99
-	get := NewString("string", "99").Int().Value()
+func TestString_Int64(t *testing.T) {
+	var expect int64 = 99
+	get := NewString("string", "99").Int64().Value()
 	_assert.Equal(t, expect, get)
 }
 func TestNewBool(t *testing.T) {
@@ -382,15 +382,15 @@ func TestBool_Float64(t *testing.T) {
 		_assert.EqualByFloat(t, expect, get)
 	}
 }
-func TestBool_Int(t *testing.T) {
+func TestBool_Int64(t *testing.T) {
 	{
-		var expect int = 1
-		get := NewBool("bool", true).Int().Value()
+		var expect int64 = 1
+		get := NewBool("bool", true).Int64().Value()
 		_assert.Equal(t, expect, get)
 	}
 	{
-		var expect int = 0
-		get := NewBool("bool", false).Int().Value()
+		var expect int64 = 0
+		get := NewBool("bool", false).Int64().Value()
 		_assert.EqualByFloat(t, expect, get)
 	}
 }
@@ -467,9 +467,9 @@ func TestFloat64_EnsureBetween(t *testing.T) {
 		NewFloat64("float64", 3.141592).EnsureBetween(3.1415926, 3.14159261)
 	})()
 }
-func TestFloat64_Int(t *testing.T) {
-	var expect int = 3
-	get := NewFloat64("float64", 3.141592).Int().Value()
+func TestFloat64_Int64(t *testing.T) {
+	var expect int64 = 3
+	get := NewFloat64("float64", 3.141592).Int64().Value()
 	_assert.Equal(t, expect, get)
 }
 func TestFloat64_Bool(t *testing.T) {

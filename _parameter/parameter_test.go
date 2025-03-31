@@ -11,9 +11,9 @@ func TestNew(t *testing.T) {
 	t.SkipNow()
 }
 func TestParameter_Int(t *testing.T) {
-	var give int = 1
+	var give int64 = 1
 	var expect string = "*_validator.Int"
-	get := fmt.Sprintf("%T", New("int", give).Int())
+	get := fmt.Sprintf("%T", New("int", give).Int64())
 	_assert.Equal(t, expect, get)
 }
 func TestParameter_String(t *testing.T) {

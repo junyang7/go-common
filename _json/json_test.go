@@ -22,6 +22,6 @@ func TestReader_Get(t *testing.T) {
 	}`
 
 	reader := New().Text(text)
-	fmt.Println(reader.Get("databases.1.port").Int().Value())
+	fmt.Println(reader.Get("databases.1.port").Int64().Value())
 
 }
