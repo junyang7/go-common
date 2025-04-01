@@ -28,7 +28,7 @@ type Machine struct {
 	Charset   string `json:"charset"`
 	Collation string `json:"collation"`
 }
-type Business struct {
+type Cluster struct {
 	Master []*Machine `json:"master"`
 	Slaver []*Machine `json:"slaver"`
 }
@@ -73,12 +73,12 @@ func open(machine *Machine) (pool *sql.DB) {
 }
 func Load() {
 	raw := _conf.Get("sql").Value()
-	var businessList map[string]*Business
-	_json.Decode(_json.Encode(raw), &businessList)
-	if len(businessList) == 0 {
+	var clusterDict map[string]*Cluster
+	_json.Decode(_json.Encode(raw), &clusterDict)
+	if len(clusterDict) == 0 {
 		return
 	}
-	for business, ms := range businessList {
+	for business, ms := range clusterDict {
 		for _, machine := range ms.Master {
 			poolDictName := getPoolDictName(business, true)
 			poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
