@@ -572,29 +572,31 @@ func (this *Sql) query() []map[string]string {
 			case reflect.Struct:
 				v := bind.Elem()
 				t := v.Type()
-				row := res[0]
-				for i := 0; i < v.NumField(); i++ {
-					f := v.Field(i)
-					n := t.Field(i).Tag.Get("sql")
-					if _list.In(n, fieldList) {
-						switch f.Kind() {
-						case reflect.String:
-							f.SetString(row[n])
-							break
-						case reflect.Bool:
-							f.SetBool(_as.Bool(row[n]))
-							break
-						case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-							f.SetInt(_as.Int64(row[n]))
-							break
-						case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-							f.SetUint(_as.Uint64(row[n]))
-							break
-						case reflect.Float32, reflect.Float64:
-							f.SetFloat(_as.Float64(row[n]))
-							break
-						default:
-							_interceptor.Insure(false).Message("数据类型不支持").Do()
+				if len(res) > 0 {
+					row := res[0]
+					for i := 0; i < v.NumField(); i++ {
+						f := v.Field(i)
+						n := t.Field(i).Tag.Get("sql")
+						if _list.In(n, fieldList) {
+							switch f.Kind() {
+							case reflect.String:
+								f.SetString(row[n])
+								break
+							case reflect.Bool:
+								f.SetBool(_as.Bool(row[n]))
+								break
+							case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+								f.SetInt(_as.Int64(row[n]))
+								break
+							case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+								f.SetUint(_as.Uint64(row[n]))
+								break
+							case reflect.Float32, reflect.Float64:
+								f.SetFloat(_as.Float64(row[n]))
+								break
+							default:
+								_interceptor.Insure(false).Message("数据类型不支持").Do()
+							}
 						}
 					}
 				}
