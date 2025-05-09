@@ -60,6 +60,7 @@ type _http struct {
 	file           map[string]string
 	httpStatusCode []int
 	needBody       bool
+	body           []byte
 }
 
 func Http() *_http {
@@ -96,6 +97,10 @@ func (this *_http) Cookie(cookie *http.Cookie) *_http {
 }
 func (this *_http) Data(data map[string]interface{}) *_http {
 	this.data = data
+	return this
+}
+func (this *_http) Body(body []byte) *_http {
+	this.body = body
 	return this
 }
 func (this *_http) File(name string, path string) *_http {
@@ -166,6 +171,9 @@ func (this *_http) Do() string {
 		case Json:
 			if !_is.Empty(this.data) {
 				_body = _json.Encode(this.data)
+			}
+			if !_is.Empty(this.body) {
+				_body = this.body
 			}
 		}
 		break
