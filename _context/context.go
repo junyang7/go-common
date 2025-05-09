@@ -212,7 +212,9 @@ func (this *Context) Body() []byte {
 	return this.BODY
 }
 func (this *Context) Bind(v interface{}) {
-	_json.Decode(this.BODY, v)
+	if len(this.BODY) > 0 {
+		_json.Decode(this.BODY, v)
+	}
 }
 func (this *Context) SetHeader(k string, v string) *Context {
 	this.w.Header().Set(k, v)
