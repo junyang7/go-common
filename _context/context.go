@@ -6,6 +6,7 @@ import (
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_json"
 	"github.com/junyang7/go-common/_parameter"
+	"github.com/junyang7/go-common/_render"
 	"github.com/junyang7/go-common/_response"
 	"github.com/junyang7/go-common/_unixMilli"
 	"io"
@@ -225,7 +226,6 @@ func (this *Context) SetCookie(cookie *http.Cookie) *Context {
 	return this
 }
 func (this *Context) JSON(data any) {
-	this.w.Header().Set("content-type", "application/json")
 	res := _response.New()
 	if nil != data {
 		switch data.(type) {
@@ -241,7 +241,7 @@ func (this *Context) JSON(data any) {
 	}
 	res.Time = _unixMilli.Get()
 	res.Consume = res.Time - this.TimeS
-	_, _ = this.w.Write(_json.Encode(res))
+	_render.JSON(this.w, res)
 }
 func (this *Context) REDIRECT(uri string) {
 	this.w.Header().Set("Location", uri)
