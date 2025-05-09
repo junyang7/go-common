@@ -12,6 +12,7 @@ import (
 	"github.com/junyang7/go-common/_list"
 	"github.com/junyang7/go-common/_pb"
 	"github.com/junyang7/go-common/_redis"
+	"github.com/junyang7/go-common/_render"
 	"github.com/junyang7/go-common/_response"
 	"github.com/junyang7/go-common/_router"
 	"github.com/junyang7/go-common/_sql"
@@ -19,6 +20,8 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -219,8 +222,8 @@ func (this *apiEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p := &apiProcessor{
 		w:      w,
 		r:      r,
-		ctx:    _context.New(w, r, this.debug),
 		origin: this.origin,
+		debug:  this.getDebug(),
 	}
 	p.do()
 }
@@ -231,6 +234,7 @@ type apiProcessor struct {
 	ctx    *_context.Context
 	origin []string
 	router *_router.Router
+	debug  bool
 }
 
 func (this *apiProcessor) do() {
@@ -239,6 +243,7 @@ func (this *apiProcessor) do() {
 			this.exception(err)
 		}
 	}()
+	this.ctx = _context.New(this.w, this.r, this.debug)
 	this.w.Header().Set("access-control-allow-credentials", "true")
 	this.checkOrigin()
 	if this.ctx.SERVER["method"] == "OPTIONS" {
@@ -338,7 +343,7 @@ func (this *apiProcessor) exception(err any) {
 		res.File = file
 		res.Line = line
 	}
-	this.ctx.JSON(res)
+	_render.JSON(this.w, res)
 }
 
 type httpEngine struct {
@@ -426,7 +431,31 @@ func (this *httpEngine) getAddr() string {
 func (this *httpEngine) Run() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/", Api().Debug(this.debug).Host(this.host).Port(this.port).Origin(this.origin).ServeHTTP)
-	mux.Handle("/", http.FileServer(http.Dir(this.getRoot())))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		root := this.getRoot()
+
+		// 拼接用户请求路径对应的文件路径
+		requestPath := r.URL.Path
+		fullPath := filepath.Join(root, filepath.Clean("/"+requestPath)) // 避免裸路径拼错
+
+		// 防止路径穿越攻击（确保 fullPath 在 root 内）
+		rel, err := filepath.Rel(root, fullPath)
+		if err != nil || strings.HasPrefix(rel, "..") {
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+
+		// 检查文件是否存在且不是目录
+		info, err := os.Stat(fullPath)
+		if err == nil && !info.IsDir() {
+			http.ServeFile(w, r, fullPath)
+			return
+		}
+
+		// 不存在的路径，返回 index.html 支持 Vue history 模式
+		http.ServeFile(w, r, filepath.Join(root, "index.html"))
+	})
+
 	listener, err := net.Listen(this.getNetwork(), this.getAddr())
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
