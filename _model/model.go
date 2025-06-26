@@ -24,9 +24,9 @@ func Build() {
 	for uk, poolList := range poolDict {
 		dbName := strings.TrimSuffix(strings.TrimSuffix(uk, ".master"), ".slaver")
 		pool := poolList[0]
-		tableList := _sql.New().Pool(pool).Sql("show tables").Query()
+		tableList := _sql.New().Pool(pool).Sql(fmt.Sprintf("SELECT `table_name` as `table` FROM `information_schema`.`tables` where `table_schema` = '%s'", dbName)).Query()
 		for _, table := range tableList {
-			tbName := table["Tables_in_runtime"]
+			tbName := table["table"]
 			res := _sql.New().Pool(pool).Sql(fmt.Sprintf("show create table %s", tbName)).Query()
 			matchedList := pattern.FindAllStringSubmatch(res[0]["Create Table"], -1)
 			fieldList := []string{}
