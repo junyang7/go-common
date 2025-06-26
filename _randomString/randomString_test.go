@@ -44,3 +44,28 @@ func TestRandomString_Get(t *testing.T) {
 	fmt.Println(New().Char("QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm0123456789").Size(4).Get())
 
 }
+
+func TestRandomString_Get2(t *testing.T) {
+
+	fmt.Println(New().Char("QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm0123456789").Size(16).Get())
+	fmt.Println(New().Char("QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm0123456789").Size(16).Get())
+	fmt.Println(New().Char("QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm0123456789").Size(16).Get())
+	fmt.Println(New().Char("QWERTYUIOPLKJHGFDSAZXCVBNMqwertyuioplkjhgfdsazxcvbnm0123456789").Size(16).Get())
+
+}
+
+func TestRandomString_Get3(t *testing.T) {
+
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+	fmt.Println(New().Size(16).Get())
+
+}
