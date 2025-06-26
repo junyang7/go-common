@@ -23,9 +23,9 @@ func Build() {
 	for uk, poolList := range poolDict {
 		dbName := strings.TrimSuffix(strings.TrimSuffix(uk, ".master"), ".slaver")
 		pool := poolList[0]
-		tableList := _sql.New().Pool(pool).Sql("show tables").Query()
+		tableList := _sql.New().Pool(pool).Sql(fmt.Sprintf("SELECT `table_name` as `table` FROM `information_schema`.`tables` where `table_schema` = '%s'", dbName)).Query()
 		for _, table := range tableList {
-			tbName := table["Tables_in_runtime"]
+			tbName := table["table"]
 			tplDao := TplDao
 			tplDao = _string.ReplaceAll(tplDao, "@1@", _string.ToUpperCamelCase(dbName+"_"+tbName))
 			tplDao = _string.ReplaceAll(tplDao, "@2@", dbName)
