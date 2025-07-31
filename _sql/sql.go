@@ -325,7 +325,7 @@ func (this *Sql) getMaster() bool {
 	return this.master
 }
 func (this *Sql) getTable() string {
-	return this.table
+	return "`" + strings.Trim(strings.TrimSpace(this.table), "`") + "`"
 }
 func (this *Sql) getWhere() string {
 	if "" == this.where {
@@ -338,7 +338,11 @@ func (this *Sql) getField() string {
 	if "" == this.field {
 		return "*"
 	} else {
-		return this.field
+		fieldList := strings.Split(this.field, ",")
+		for k, v := range fieldList {
+			fieldList[k] = "`" + strings.Trim(strings.TrimSpace(v), "`") + "`"
+		}
+		return strings.Join(fieldList, ",")
 	}
 }
 func (this *Sql) getIndex() string {
@@ -436,6 +440,9 @@ func (this *Sql) buildAddList() *Sql {
 		}
 	}
 	table := this.getTable()
+	for k, v := range fieldList {
+		fieldList[k] = "`" + strings.Trim(strings.TrimSpace(v), "`") + "`"
+	}
 	field := _list.Implode(",", fieldList)
 	this.Sql(fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", table, field, template))
 	this.Parameter(parameter...)
