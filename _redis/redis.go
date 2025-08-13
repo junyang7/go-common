@@ -83,7 +83,8 @@ type Redis struct {
 
 func New() *Redis {
 	return &Redis{
-		context: context.Background(),
+		context:  context.Background(),
+		business: "default",
 	}
 }
 func (this *Redis) Context(context context.Context) *Redis {
