@@ -460,7 +460,7 @@ func (this *Sql) buildSet() *Sql {
 	templateList := make([]string, 0, len(row))
 	parameter := []interface{}{}
 	for field, value := range row {
-		templateList = append(templateList, field+" = ?")
+		templateList = append(templateList, "`"+strings.Trim(field, "`")+"`"+" = ?")
 		parameter = append(parameter, value)
 	}
 	template := _list.Implode(",", templateList)
