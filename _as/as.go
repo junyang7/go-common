@@ -7,6 +7,8 @@ import (
 
 func String(value interface{}) string {
 	switch v := value.(type) {
+	case nil:
+		return ""
 	case int:
 		return strconv.Itoa(v)
 	case int8:
@@ -43,6 +45,8 @@ func String(value interface{}) string {
 }
 func Bool(value interface{}) bool {
 	switch v := value.(type) {
+	case nil:
+		return false
 	case int:
 		return v != 0
 	case int8:
@@ -79,6 +83,8 @@ func Bool(value interface{}) bool {
 }
 func ByteList(value interface{}) []byte {
 	switch v := value.(type) {
+	case nil:
+		return []byte{}
 	case string:
 		return []byte(v)
 	case []byte:
@@ -89,6 +95,8 @@ func ByteList(value interface{}) []byte {
 }
 func Float64(value interface{}) float64 {
 	switch v := value.(type) {
+	case nil:
+		return 0
 	case int:
 		return float64(v)
 	case int8:
@@ -136,6 +144,8 @@ func Float64(value interface{}) float64 {
 }
 func Int64(value interface{}) int64 {
 	switch v := value.(type) {
+	case nil:
+		return 0
 	case int:
 		return int64(v)
 	case int8:
@@ -186,6 +196,8 @@ func Int(value interface{}) int {
 }
 func Uint64(value interface{}) uint64 {
 	switch v := value.(type) {
+	case nil:
+		return 0
 	case int:
 		return uint64(v)
 	case int8:
