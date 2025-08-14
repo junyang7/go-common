@@ -263,7 +263,7 @@ func (this *apiProcessor) checkOrigin() {
 	for _, origin := range this.origin {
 		if "*" == origin || matchedList[2] == origin || "." == origin[0:1] && matchedList[2][len(matchedList[2])-len(origin):] == origin {
 			headerValue := matchedList[1] + "://" + matchedList[2]
-			if 4 == len(matchedList) {
+			if 4 == len(matchedList) && len(matchedList[3]) > 0 {
 				headerValue += ":" + matchedList[3]
 			}
 			this.w.Header().Set("access-control-allow-origin", headerValue)
