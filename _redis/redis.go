@@ -10,6 +10,7 @@ import (
 	"github.com/junyang7/go-common/_json"
 	"github.com/redis/go-redis/v9"
 	"math/rand"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -40,7 +41,7 @@ func getPoolDictName(business string, master bool) string {
 }
 func getDsn(machine *Machine) string {
 	var dsn string
-	dsn = fmt.Sprintf("redis://%s:%s@%s:%s/%s", machine.Username, machine.Password, machine.Host, machine.Port, machine.Database)
+	dsn = fmt.Sprintf("redis://%s@%s:%s/%s", url.UserPassword(machine.Username, machine.Password), machine.Host, machine.Port, machine.Database)
 	return dsn
 }
 func open(machine *Machine) (pool *redis.Client) {
