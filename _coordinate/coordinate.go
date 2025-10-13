@@ -53,7 +53,8 @@ func transform(lngLat [2]float64) [2]float64 {
 	dLon = (dLon * 180.0) / (A / sqrtMagic * math.Cos(radLat) * math.Pi)
 	return [2]float64{lon + dLon, lat + dLat}
 }
-func convertWGS84ToGCJ02(lngLat [2]float64) [2]float64 {
+
+func ConvertWGS84ToGCJ02(lngLat [2]float64) [2]float64 {
 	lon, lat := lngLat[0], lngLat[1]
 	if isOutOfChina(lngLat) {
 		return [2]float64{lon, lat}
@@ -68,7 +69,7 @@ func convertWGS84ToGCJ02(lngLat [2]float64) [2]float64 {
 	dLon = (dLon * 180.0) / (A / sqrtMagic * math.Cos(radLat) * math.Pi)
 	return [2]float64{lon + dLon, lat + dLat}
 }
-func convertGCJ02ToBD09(lngLat [2]float64) [2]float64 {
+func ConvertGCJ02ToBD09(lngLat [2]float64) [2]float64 {
 	lon, lat := lngLat[0], lngLat[1]
 	x := lon
 	y := lat
@@ -78,7 +79,7 @@ func convertGCJ02ToBD09(lngLat [2]float64) [2]float64 {
 	bdLat := z*math.Sin(theta) + 0.006
 	return [2]float64{bdLon, bdLat}
 }
-func convertBD09ToGCJ02(lngLat [2]float64) [2]float64 {
+func ConvertBD09ToGCJ02(lngLat [2]float64) [2]float64 {
 	bdLon, bdLat := lngLat[0], lngLat[1]
 	x := bdLon - 0.0065
 	y := bdLat - 0.006
@@ -88,7 +89,7 @@ func convertBD09ToGCJ02(lngLat [2]float64) [2]float64 {
 	gcjLat := z * math.Sin(theta)
 	return [2]float64{gcjLon, gcjLat}
 }
-func convertGCJ02ToWGS84(lngLat [2]float64) [2]float64 {
+func ConvertGCJ02ToWGS84(lngLat [2]float64) [2]float64 {
 	t := transform(lngLat)
 	lon := t[0]
 	lat := t[1]
@@ -96,7 +97,7 @@ func convertGCJ02ToWGS84(lngLat [2]float64) [2]float64 {
 	wgsLat := lngLat[1]*2 - lat
 	return [2]float64{wgsLon, wgsLat}
 }
-func getWGS84Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
+func GetWGS84Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
 	lon1 := lngLatFrom[0]
 	lat1 := lngLatFrom[1]
 	lon2 := lngLatTo[0]
@@ -109,13 +110,13 @@ func getWGS84Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
 	s = s * A
 	return s
 }
-func getGCJ02Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
-	return getWGS84Distance(convertGCJ02ToWGS84(lngLatFrom), convertGCJ02ToWGS84(lngLatTo))
+func GetGCJ02Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
+	return GetWGS84Distance(ConvertGCJ02ToWGS84(lngLatFrom), ConvertGCJ02ToWGS84(lngLatTo))
 }
-func getBD09Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
-	return getGCJ02Distance(convertBD09ToGCJ02(lngLatFrom), convertBD09ToGCJ02(lngLatTo))
+func GetBD09Distance(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
+	return GetGCJ02Distance(ConvertBD09ToGCJ02(lngLatFrom), ConvertBD09ToGCJ02(lngLatTo))
 }
-func getAngle(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
+func GetAngle(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
 	lonA := lngLatFrom[0] * math.Pi / 180
 	latA := lngLatFrom[1] * math.Pi / 180
 	lonB := lngLatTo[0] * math.Pi / 180
@@ -125,7 +126,8 @@ func getAngle(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
 	y := math.Sin(dLon) * math.Cos(latB)
 	return math.Atan2(y, x) * 180 / math.Pi
 }
-func convertLngLatToXY(lngLat [2]float64) [2]float64 {
+
+func ConvertLngLatToXY(lngLat [2]float64) [2]float64 {
 	lng := lngLat[0]
 	lat := lngLat[1]
 	lat = math.Max(math.Min(EPSG3857MACLAT, lat), -EPSG3857MACLAT)
@@ -134,7 +136,7 @@ func convertLngLatToXY(lngLat [2]float64) [2]float64 {
 		YR * math.Log(math.Tan(math.Pi/4+lat*VR/2)),
 	}
 }
-func convertXYToLngLat(xy [2]float64) [2]float64 {
+func ConvertXYToLngLat(xy [2]float64) [2]float64 {
 	x := xy[0]
 	y := xy[1]
 	return [2]float64{
@@ -142,7 +144,8 @@ func convertXYToLngLat(xy [2]float64) [2]float64 {
 		(2*math.Atan(math.Exp(y/YR)) - math.Pi/2) * MR,
 	}
 }
-func distance(p1 [2]float64, p2 [2]float64) float64 {
+
+func Distance(p1 [2]float64, p2 [2]float64) float64 {
 	rad := VR
 	lat1 := p1[1] * rad
 	lng1 := p1[0] * rad
@@ -152,13 +155,15 @@ func distance(p1 [2]float64, p2 [2]float64) float64 {
 	a := (1 - math.Cos(lat2-lat1) + (1-math.Cos(dLng))*math.Cos(lat1)*math.Cos(lat2)) / 2
 	return 2 * YR * math.Asin(math.Sqrt(a))
 }
-func distancePToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) float64 {
-	return distance(p, pToP1P2(p, p1, p2))
+func DistancePToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) float64 {
+	return Distance(p, PToP1P2(p, p1, p2))
 }
-func pToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) [2]float64 {
-	xy := convertLngLatToXY(p)
-	xy1 := convertLngLatToXY(p1)
-	xy2 := convertLngLatToXY(p2)
+
+// 需要考虑p1和2几乎是一个位置
+func PToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) [2]float64 {
+	xy := ConvertLngLatToXY(p)
+	xy1 := ConvertLngLatToXY(p1)
+	xy2 := ConvertLngLatToXY(p2)
 	x := xy[0]
 	y := xy[1]
 	x1 := xy1[0]
@@ -169,12 +174,12 @@ func pToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) [2]float64 {
 	dy := y2 - y1
 	t := (dx*(x-x1) + dy*(y-y1)) / (dx*dx + dy*dy)
 	t = math.Max(0, math.Min(1, t))
-	return convertXYToLngLat([2]float64{x1 + t*dx, y1 + t*dy})
+	return ConvertXYToLngLat([2]float64{x1 + t*dx, y1 + t*dy})
 }
-func distancePToPath(p [2]float64, path [][2]float64) float64 {
+func DistancePToPath(p [2]float64, path [][2]float64) float64 {
 	s := math.Inf(1)
 	for i := 0; i < len(path)-1; i++ {
-		s = math.Min(s, distancePToP1P2(p, path[i], path[i+1]))
+		s = math.Min(s, DistancePToP1P2(p, path[i], path[i+1]))
 	}
 	return s
 }
