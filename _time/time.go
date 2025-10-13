@@ -16,6 +16,7 @@ const (
 	FormatDate          = "2006-01-02"
 	FormatDatetime      = "2006-01-02 15:04:05"
 	FormatDatetimeMilli = "2006-01-02 15:04:05.000"
+	FormatYmdHis        = "20060102150405"
 	FormatYmd           = "20060102"
 	FormatYm            = "200601"
 )
