@@ -3,6 +3,7 @@ package _context
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/junyang7/go-common/_as"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_json"
 	"github.com/junyang7/go-common/_parameter"
@@ -12,6 +13,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -29,6 +31,7 @@ type Context struct {
 	ENV     map[string]string
 	BODY    []byte
 	FILE    map[string][]*multipart.FileHeader
+	request map[string]interface{}
 }
 
 func New(w http.ResponseWriter, r *http.Request, debug bool) *Context {
@@ -46,6 +49,7 @@ func New(w http.ResponseWriter, r *http.Request, debug bool) *Context {
 		ENV:     map[string]string{},
 		BODY:    []byte{},
 		FILE:    map[string][]*multipart.FileHeader{},
+		request: map[string]interface{}{},
 	}
 	for k, v := range this.r.Header {
 		this.SERVER[strings.ToLower(k)] = v[0]
@@ -67,7 +71,8 @@ func New(w http.ResponseWriter, r *http.Request, debug bool) *Context {
 	if len(contentTypePartList) > 0 {
 		contentType = contentTypePartList[0]
 	}
-	switch contentType {
+	this.SERVER["content-type"] = contentType
+	switch this.SERVER["content-type"] {
 	case "application/x-www-form-urlencoded":
 		if err := this.r.ParseForm(); nil != err {
 			_interceptor.Insure(false).Message(err).Do()
@@ -213,8 +218,51 @@ func (this *Context) Body() []byte {
 	return this.BODY
 }
 func (this *Context) Bind(v interface{}) {
-	if len(this.BODY) > 0 {
-		_json.Decode(this.BODY, v)
+	if this.SERVER["content-type"] == "application/json" {
+		if len(this.BODY) > 0 {
+			_json.Decode(this.BODY, v)
+		}
+		return
+	}
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr || rv.IsNil() {
+		return
+	}
+	rv = rv.Elem()
+	if rv.Kind() != reflect.Struct {
+		return
+	}
+	rt := rv.Type()
+	for i := 0; i < rv.NumField(); i++ {
+		field := rv.Field(i)
+		if !field.CanSet() {
+			continue
+		}
+		fieldType := rt.Field(i)
+		jsonTag := fieldType.Tag.Get("json")
+		if jsonTag == "" || jsonTag == "-" {
+			jsonTag = fieldType.Name
+		} else {
+			if idx := strings.Index(jsonTag, ","); idx != -1 {
+				jsonTag = jsonTag[:idx]
+			}
+		}
+		value, ok := this.REQUEST[jsonTag]
+		if !ok {
+			continue
+		}
+		switch field.Kind() {
+		case reflect.String:
+			field.SetString(value)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			field.SetInt(_as.Int64(value))
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			field.SetUint(_as.Uint64(value))
+		case reflect.Float32, reflect.Float64:
+			field.SetFloat(_as.Float64(value))
+		case reflect.Bool:
+			field.SetBool(_as.Bool(value))
+		}
 	}
 }
 func (this *Context) SetHeader(k string, v string) *Context {
