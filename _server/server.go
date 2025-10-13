@@ -267,7 +267,8 @@ func (this *apiProcessor) checkOrigin() {
 				headerValue += ":" + matchedList[3]
 			}
 			this.w.Header().Set("access-control-allow-origin", headerValue)
-			this.w.Header().Set("access-control-allow-Headers", "content-type, authorization")
+			this.w.Header().Set("access-control-allow-headers", "content-type, authorization")
+			this.w.Header().Set("access-control-expose-headers", "content-type, authorization")
 			return
 		}
 	}
