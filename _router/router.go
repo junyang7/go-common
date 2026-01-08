@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// router 内部路由构建辅助结构
 type router struct {
 	prefix               string
 	middlewareBeforeList []func(ctx *_context.Context)
@@ -15,6 +16,8 @@ type router struct {
 	methodList           []string
 }
 
+// 全局默认路由管理器（向后兼容）
+var defaultManager = NewManager()
 var groupList []*router = []*router{}
 
 func Any(rule string, call func(ctx *_context.Context)) {
@@ -73,6 +76,7 @@ func Group(group func()) {
 	group()
 }
 
+// Router 路由定义
 type Router struct {
 	Rule                 string
 	Call                 func(ctx *_context.Context)
@@ -83,7 +87,21 @@ type Router struct {
 	IsRegexp             bool
 }
 
+// RouterList 全局路由列表（向后兼容，已废弃，建议使用 Manager）
+// Deprecated: 使用 Manager 替代以支持多实例和线程安全
 var RouterList []*Router = []*Router{}
+
+// GetDefaultManager 获取默认路由管理器
+func GetDefaultManager() *Manager {
+	return defaultManager
+}
+
+// ResetDefaultManager 重置默认路由管理器（仅用于测试）
+func ResetDefaultManager() {
+	defaultManager = NewManager()
+	RouterList = []*Router{}
+	groupList = []*router{}
+}
 
 func (this *router) Any(rule string, call func(ctx *_context.Context)) {
 	this.MethodList([]string{"ANY"}, rule, call)
@@ -160,7 +178,10 @@ func (this *router) MethodList(methodList []string, rule string, call func(ctx *
 	if r.IsRegexp {
 		r.Rule = `^` + r.Rule + `$`
 	}
+	
+	// 同时添加到全局列表（向后兼容）和默认管理器
 	RouterList = append(RouterList, r)
+	defaultManager.add(r)
 }
 func (this *router) MiddlewareBefore(middleware func(ctx *_context.Context)) *router {
 	return this.MiddlewareBeforeList([]func(ctx *_context.Context){middleware})

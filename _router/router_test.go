@@ -15,6 +15,7 @@ func testFunc(ctx *_context.Context) {
 func TestAny(t *testing.T) {
 	// 普通
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := `/router/any`
 		Any(rule, testFunc)
 		r := RouterList[0]
@@ -55,10 +56,10 @@ func TestAny(t *testing.T) {
 			get := _as.String(ctx.STORE["test"])
 			_assert.Equal(t, expect, get)
 		}
-		RouterList = []*Router{}
 	}
 	// 正则
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := `/:a/:b(\w+)/c/d`
 		Any(rule, testFunc)
 		r := RouterList[0]
@@ -85,26 +86,23 @@ func TestAny(t *testing.T) {
 		}
 		{
 			rule := `/a/b/c/d/e`
-			var expect []string = []string{}
 			get := regexp.MustCompile(r.Rule).FindStringSubmatch(rule)
-			_assert.EqualByList(t, expect, get)
+			_assert.Equal(t, true, get == nil || len(get) == 0)
 		}
 		{
 			rule := `a/b/c/d`
-			var expect []string = []string{}
 			get := regexp.MustCompile(r.Rule).FindStringSubmatch(rule)
-			_assert.EqualByList(t, expect, get)
+			_assert.Equal(t, true, get == nil || len(get) == 0)
 		}
 		{
 			rule := `/e/a/b/c/d`
-			var expect []string = []string{}
 			get := regexp.MustCompile(r.Rule).FindStringSubmatch(rule)
-			_assert.EqualByList(t, expect, get)
+			_assert.Equal(t, true, get == nil || len(get) == 0)
 		}
-		RouterList = []*Router{}
 	}
 }
 func TestGet(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/any`
 	Get(rule, testFunc)
 	r := RouterList[0]
@@ -115,9 +113,9 @@ func TestGet(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestPost(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/post`
 	Post(rule, testFunc)
 	r := RouterList[0]
@@ -128,9 +126,9 @@ func TestPost(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestPut(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/put`
 	Put(rule, testFunc)
 	r := RouterList[0]
@@ -141,9 +139,9 @@ func TestPut(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestDelete(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/delete`
 	Delete(rule, testFunc)
 	r := RouterList[0]
@@ -154,9 +152,9 @@ func TestDelete(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestOptions(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/options`
 	Options(rule, testFunc)
 	r := RouterList[0]
@@ -167,9 +165,9 @@ func TestOptions(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestHead(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/head`
 	Head(rule, testFunc)
 	r := RouterList[0]
@@ -180,9 +178,9 @@ func TestHead(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestPatch(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/patch`
 	Patch(rule, testFunc)
 	r := RouterList[0]
@@ -193,9 +191,9 @@ func TestPatch(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 func TestMethod(t *testing.T) {
+	ResetDefaultManager() // 在测试开始前重置
 	rule := `/router/method`
 	method := `CONNECT`
 	Method(method, rule, testFunc)
@@ -221,7 +219,6 @@ func TestMethodList(t *testing.T) {
 			_assert.EqualByList(t, expect, get)
 		}
 	}
-	RouterList = []*Router{}
 }
 
 //	func TestMiddleware(t *testing.T) {
@@ -270,13 +267,14 @@ func TestMethodList(t *testing.T) {
 //	}
 func TestPrefix(t *testing.T) {
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := `/router/prefix`
 		Prefix(`/prefix`).Any(rule, testFunc)
 		r := RouterList[0]
 		var expect string = `/prefix/router/prefix`
 		get := r.Rule
 		_assert.Equal(t, expect, get)
-		RouterList = []*Router{}
+		ResetDefaultManager() // 使用新的重置方法
 	}
 	{
 		rule := `/router/prefix`
@@ -285,47 +283,46 @@ func TestPrefix(t *testing.T) {
 		var expect string = `/router/prefix`
 		get := r.Rule
 		_assert.Equal(t, expect, get)
-		RouterList = []*Router{}
 	}
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := `/router/prefix`
 		Prefix(`/prefix/`).Any(rule, testFunc)
 		r := RouterList[0]
 		var expect string = `/prefix/router/prefix`
 		get := r.Rule
 		_assert.Equal(t, expect, get)
-		RouterList = []*Router{}
 	}
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := `/router/prefix`
 		Prefix(`///prefix///`).Any(rule, testFunc)
 		r := RouterList[0]
 		var expect string = `/prefix/router/prefix`
 		get := r.Rule
 		_assert.Equal(t, expect, get)
-		RouterList = []*Router{}
 	}
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := `///router/prefix///`
 		Prefix(`///prefix///`).Any(rule, testFunc)
 		r := RouterList[0]
 		var expect string = `/prefix/router/prefix`
 		get := r.Rule
 		_assert.Equal(t, expect, get)
-		RouterList = []*Router{}
 	}
 	{
+		ResetDefaultManager() // 在测试开始前重置
 		rule := ``
 		Prefix(``).Any(rule, testFunc)
 		r := RouterList[0]
 		var expect string = `/`
 		get := r.Rule
 		_assert.Equal(t, expect, get)
-		RouterList = []*Router{}
 	}
 }
 func TestGroup(t *testing.T) {
-	RouterList = []*Router{}
+	ResetDefaultManager() // 使用新的重置方法
 	Group(func() {
 		Any("/r1", testFunc)
 		Any("/r2", testFunc)

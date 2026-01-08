@@ -6,7 +6,9 @@ import (
 )
 
 func Get(filepath string) string {
+
 	switch strings.ToLower(path.Ext(filepath)) {
+	// 文本类型
 	case ".html", ".htm":
 		return "text/html"
 	case ".css":
@@ -17,9 +19,15 @@ func Get(filepath string) string {
 		return "text/xml"
 	case ".csv":
 		return "text/csv"
+	case ".txt":
+		return "text/plain"
+	case ".md":
+		return "text/markdown"
+
+	// 图片类型
 	case ".ico":
 		return "image/x-icon"
-	case ".jpe", ".jpeg":
+	case ".jpg", ".jpe", ".jpeg":
 		return "image/jpeg"
 	case ".png":
 		return "image/png"
@@ -27,6 +35,12 @@ func Get(filepath string) string {
 		return "image/gif"
 	case ".webp":
 		return "image/webp"
+	case ".svg":
+		return "image/svg+xml"
+	case ".bmp":
+		return "image/bmp"
+
+	// 音频类型
 	case ".mp3":
 		return "audio/mpeg"
 	case ".wav":
@@ -37,6 +51,8 @@ func Get(filepath string) string {
 		return "audio/flac"
 	case ".aac":
 		return "audio/aac"
+
+	// 视频类型
 	case ".mp4":
 		return "video/mp4"
 	case ".webm":
@@ -47,6 +63,10 @@ func Get(filepath string) string {
 		return "video/avi"
 	case ".mpeg", ".mpg":
 		return "video/mpeg"
+	case ".mov":
+		return "video/quicktime"
+
+	// 应用类型
 	case ".json":
 		return "application/json"
 	case ".pdf":
@@ -57,7 +77,36 @@ func Get(filepath string) string {
 		return "application/x-tar"
 	case ".gz":
 		return "application/gzip"
+	case ".7z":
+		return "application/x-7z-compressed"
+	case ".rar":
+		return "application/vnd.rar"
+	case ".yaml", ".yml":
+		return "application/x-yaml"
+	case ".toml":
+		return "application/toml"
+
+	// 字体类型
+	case ".woff":
+		return "font/woff"
+	case ".woff2":
+		return "font/woff2"
+	case ".ttf":
+		return "font/ttf"
+	case ".otf":
+		return "font/otf"
+
+	// 脚本/代码类型
+	case ".ts":
+		return "text/typescript"
+	case ".jsx":
+		return "text/jsx"
+	case ".tsx":
+		return "text/tsx"
+
+	// 默认类型
 	default:
 		return "application/octet-stream"
 	}
+
 }
