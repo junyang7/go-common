@@ -2,7 +2,7 @@
 
 set -e
 
-VERSION="2.0.0"
+VERSION="1.2.0"
 PATH="./VERSION"
 
 new_version="${VERSION}+$(/bin/date +%Y%m%d%H%M%S)"
