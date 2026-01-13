@@ -23,7 +23,7 @@ func Build(root string, dbName string, tbName string) {
 	tpl = _string.ReplaceAll(tpl, "@2@", dbName)
 	tpl = _string.ReplaceAll(tpl, "@3@", tbName)
 	path := root + "/" + strings.ToLower(dbName) + "_" + strings.ToLower(tbName) + ".go"
-	_file.Write(path, tpl, 0644)
+	_file.Write(path, tpl)
 }
 func BuildByAuto() {
 	root := _directory.Current() + "/dao"

@@ -7,10 +7,15 @@ import (
 	"os"
 )
 
-func Write(path string, content interface{}, perm os.FileMode) {
-	if err := os.WriteFile(path, _as.ByteList(content), perm); nil != err {
+func Write(path string, content interface{}) {
+	if err := os.WriteFile(path, _as.ByteList(content), 0777); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
+}
+func Append(path string, content interface{}) {
+	f := Open(path, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
+	defer f.Close()
+	f.Write(content)
 }
 func Exists(path string) bool {
 	f, err := os.Stat(path)
@@ -37,13 +42,13 @@ func ReadAllAsString(filepath string) string {
 func ReadAllAsInt64(filepath string) int64 {
 	return _as.Int64(ReadAll(filepath))
 }
-func Copy(pathA string, pathB string) {
-	o, err := os.Open(pathA)
+func Copy(old string, new string) {
+	o, err := os.Open(old)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	defer o.Close()
-	n, err := os.Create(pathB)
+	n, err := os.Create(new)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}

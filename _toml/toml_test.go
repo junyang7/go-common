@@ -115,7 +115,7 @@ func TestReaderFile(t *testing.T) {
 		path := "test.toml"
 		_file.Write(path, `[person]
 name = "Tom"
-age = 30`, 0777)
+age = 30`)
 		conf := New().File(path)
 		param := conf.Get("person.name")
 		_assert.NotNil(t, param)
@@ -124,7 +124,7 @@ age = 30`, 0777)
 	}
 	{
 		path := "test.toml"
-		_file.Write(path, `invalid content`, 0777)
+		_file.Write(path, `invalid content`)
 		defer func() {
 			err := recover()
 			_assert.NotNil(t, err)

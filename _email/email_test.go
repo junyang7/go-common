@@ -88,7 +88,7 @@ func TestAttach(t *testing.T) {
 	{
 		attachmentPath := "test_attachment_1.txt"
 		content := "This is a test attachment file"
-		_file.Write(attachmentPath, content, 0644)
+		_file.Write(attachmentPath, content)
 		defer _file.Delete(attachmentPath)
 		m := New("smtp.example.com", 587, "user", "pass", "from@example.com", "to@example.com")
 		m.Attach(attachmentPath)
@@ -98,11 +98,11 @@ func TestAttach(t *testing.T) {
 	{
 		attachmentPath1 := "test_attachment_2_1.txt"
 		content1 := "This is the first test attachment"
-		_file.Write(attachmentPath1, content1, 0644)
+		_file.Write(attachmentPath1, content1)
 		defer _file.Delete(attachmentPath1)
 		attachmentPath2 := "test_attachment_2_2.txt"
 		content2 := "This is the second test attachment"
-		_file.Write(attachmentPath2, content2, 0644)
+		_file.Write(attachmentPath2, content2)
 		defer _file.Delete(attachmentPath2)
 		m := New("smtp.example.com", 587, "user", "pass", "from@example.com", "to@example.com")
 		m.Attach(attachmentPath1, attachmentPath2)
@@ -112,7 +112,7 @@ func TestAttach(t *testing.T) {
 	{
 		attachmentPath := "test_attachment_3.txt"
 		content := "This is a test attachment file"
-		_file.Write(attachmentPath, content, 0644)
+		_file.Write(attachmentPath, content)
 		defer _file.Delete(attachmentPath)
 		m := New("smtp.example.com", 587, "user", "pass", "from@example.com", "to@example.com")
 		m.Attach(attachmentPath)

@@ -8,7 +8,6 @@ import (
 	"github.com/junyang7/go-common/_name"
 	"github.com/junyang7/go-common/_sql"
 	"github.com/junyang7/go-common/_string"
-	"os"
 	"regexp"
 	"strings"
 )
@@ -39,7 +38,7 @@ func Build(root string, dbName string, tbName string, showCreateTable string) {
 	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(dbName+"_"+tbName))
 	tpl = _string.ReplaceAll(tpl, "@2@", field)
 	path := root + "/" + dbName + "_" + tbName + ".go"
-	_file.Write(path, tpl, os.ModePerm)
+	_file.Write(path, tpl)
 }
 func BuildByAuto() {
 	root := _directory.Current() + "/table"

@@ -12,6 +12,9 @@ func GetByTime(t time.Time) string {
 func Get() string {
 	return GetByTime(time.Now())
 }
+func GetByYmd() string {
+	return _time.Get().Format(_time.FormatYmd)
+}
 func GetByUnix(unix int64) string {
 	return GetByTime(_time.GetByUnix(unix))
 }

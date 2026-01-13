@@ -10,16 +10,14 @@ func TestWrite(t *testing.T) {
 	{
 		path := "test_write.txt"
 		content := "Hello, World!"
-		perm := os.FileMode(0644)
-		Write(path, content, perm)
+		Write(path, content)
 		_assert.True(t, Exists(path))
 		Delete(path)
 	}
 	{
 		path := "test_write_empty.txt"
 		content := ""
-		perm := os.FileMode(0644)
-		Write(path, content, perm)
+		Write(path, content)
 		_assert.True(t, Exists(path))
 		Delete(path)
 	}
@@ -28,7 +26,7 @@ func TestExists(t *testing.T) {
 	{
 		path := "test_exists.txt"
 		content := "File exists"
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		_assert.True(t, Exists(path))
 		Delete(path)
 	}
@@ -41,7 +39,7 @@ func TestDelete(t *testing.T) {
 	{
 		path := "test_delete.txt"
 		content := "Hello to delete"
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		Delete(path)
 		_assert.False(t, Exists(path))
 	}
@@ -55,7 +53,7 @@ func TestReadAll(t *testing.T) {
 	{
 		path := "test_read.txt"
 		content := "Reading this content"
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := string(ReadAll(path))
 		_assert.Equal(t, content, readContent)
 		Delete(path)
@@ -63,7 +61,7 @@ func TestReadAll(t *testing.T) {
 	{
 		path := "test_read_empty.txt"
 		content := ""
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := string(ReadAll(path))
 		_assert.Equal(t, content, readContent)
 		Delete(path)
@@ -73,7 +71,7 @@ func TestReadAllAsString(t *testing.T) {
 	{
 		path := "test_read_string.txt"
 		content := "This is a string"
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := ReadAllAsString(path)
 		_assert.Equal(t, content, readContent)
 		Delete(path)
@@ -83,7 +81,7 @@ func TestReadAllAsInt64(t *testing.T) {
 	{
 		path := "test_read_int64.txt"
 		content := int64(123456789)
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := ReadAllAsInt64(path)
 		_assert.Equal(t, content, readContent)
 		Delete(path)
@@ -91,7 +89,7 @@ func TestReadAllAsInt64(t *testing.T) {
 	{
 		path := "test_read_empty_int64.txt"
 		content := int64(0)
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := ReadAllAsInt64(path)
 		_assert.Equal(t, content, readContent)
 		Delete(path)
@@ -99,7 +97,7 @@ func TestReadAllAsInt64(t *testing.T) {
 	{
 		path := "test_read_invalid_int64.txt"
 		content := "invalid int64 content"
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := ReadAllAsInt64(path)
 		_assert.Equal(t, int64(0), readContent)
 		Delete(path)
@@ -107,7 +105,7 @@ func TestReadAllAsInt64(t *testing.T) {
 	{
 		path := "test_read_negative_int64.txt"
 		content := int64(-987654321)
-		Write(path, content, os.FileMode(0644))
+		Write(path, content)
 		readContent := ReadAllAsInt64(path)
 		_assert.Equal(t, content, readContent)
 		Delete(path)
@@ -120,7 +118,7 @@ func TestCopy(t *testing.T) {
 		content := "TestCopy"
 		Delete(pathA)
 		Delete(pathB)
-		Write(pathA, content, os.ModePerm)
+		Write(pathA, content)
 		Copy(pathA, pathB)
 		var expect bool = true
 		get := Exists(pathB)
@@ -136,7 +134,7 @@ func TestRename(t *testing.T) {
 		content := "TestRename"
 		Delete(pathA)
 		Delete(pathB)
-		Write(pathA, content, os.ModePerm)
+		Write(pathA, content)
 		Rename(pathA, pathB)
 		var expect bool = true
 		get := Exists(pathB)

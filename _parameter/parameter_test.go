@@ -4,7 +4,6 @@ import (
 	"github.com/junyang7/go-common/_assert"
 	"github.com/junyang7/go-common/_file"
 	"mime/multipart"
-	"os"
 	"testing"
 )
 
@@ -101,8 +100,7 @@ func TestFile(t *testing.T) {
 	{
 		path := "test_write.txt"
 		content := "Hello, World!"
-		perm := os.FileMode(0644)
-		_file.Write(path, content, perm)
+		_file.Write(path, content)
 		_assert.True(t, _file.Exists(path))
 		fileHeader := &multipart.FileHeader{
 			Filename: path,
@@ -119,11 +117,10 @@ func TestFileList(t *testing.T) {
 	{
 		path1 := "test_write_list1.txt"
 		content := "File content"
-		perm := os.FileMode(0644)
-		_file.Write(path1, content, perm)
+		_file.Write(path1, content)
 		_assert.True(t, _file.Exists(path1))
 		path2 := "test_write_list2.txt"
-		_file.Write(path2, content, perm)
+		_file.Write(path2, content)
 		_assert.True(t, _file.Exists(path2))
 		fileHeader1 := &multipart.FileHeader{
 			Filename: path1,

@@ -3,7 +3,6 @@ package _json
 import (
 	"github.com/junyang7/go-common/_assert"
 	"github.com/junyang7/go-common/_file"
-	"os"
 	"testing"
 )
 
@@ -49,8 +48,7 @@ func TestEncodeAsString(t *testing.T) {
 func TestDecode(t *testing.T) {
 	path := "test_decode.json"
 	data := `{"Name":"Alice","Age":30}`
-	perm := os.FileMode(0644)
-	_file.Write(path, data, perm)
+	_file.Write(path, data)
 	_assert.True(t, _file.Exists(path))
 	defer _file.Delete(path)
 	{
@@ -69,8 +67,7 @@ func TestDecode(t *testing.T) {
 func TestDecodeByFile(t *testing.T) {
 	path := "test_decode_file.json"
 	data := `{"Name":"Bob","Age":25}`
-	perm := os.FileMode(0644)
-	_file.Write(path, data, perm)
+	_file.Write(path, data)
 	_assert.True(t, _file.Exists(path))
 	defer _file.Delete(path)
 	{
@@ -91,8 +88,7 @@ func TestDecodeByText(t *testing.T) {
 func TestReaderByte(t *testing.T) {
 	path := "test_reader_byte.json"
 	data := `{"name":"Alice","age":30}`
-	perm := os.FileMode(0644)
-	_file.Write(path, data, perm)
+	_file.Write(path, data)
 	_assert.True(t, _file.Exists(path))
 	defer _file.Delete(path)
 	{
@@ -114,8 +110,7 @@ func TestReaderText(t *testing.T) {
 func TestReaderFile(t *testing.T) {
 	path := "test_reader_file.json"
 	data := `{"name":"Charlie","age":35}`
-	perm := os.FileMode(0644)
-	_file.Write(path, data, perm)
+	_file.Write(path, data)
 	_assert.True(t, _file.Exists(path))
 	defer _file.Delete(path)
 	{
@@ -129,8 +124,7 @@ func TestReaderFile(t *testing.T) {
 func TestReaderGet(t *testing.T) {
 	path := "test_reader_get.json"
 	data := `{"user": {"name": "Alice", "age": 30}}`
-	perm := os.FileMode(0644)
-	_file.Write(path, data, perm)
+	_file.Write(path, data)
 	_assert.True(t, _file.Exists(path))
 	defer _file.Delete(path)
 	{
@@ -142,7 +136,7 @@ func TestReaderGet(t *testing.T) {
 	}
 	{
 		data := `{"users": [{"name": "Alice"}, {"name": "Bob"}]}`
-		_file.Write(path, data, perm)
+		_file.Write(path, data)
 		conf := New().File(path)
 		result := conf.Get("users.0.name")
 		_assert.Equal(t, "Alice", result.Value())
