@@ -6,7 +6,6 @@ import (
 )
 
 func Get(filepath string) string {
-
 	switch strings.ToLower(path.Ext(filepath)) {
 	// 文本类型
 	case ".html", ".htm":
@@ -23,7 +22,6 @@ func Get(filepath string) string {
 		return "text/plain"
 	case ".md":
 		return "text/markdown"
-
 	// 图片类型
 	case ".ico":
 		return "image/x-icon"
@@ -39,7 +37,6 @@ func Get(filepath string) string {
 		return "image/svg+xml"
 	case ".bmp":
 		return "image/bmp"
-
 	// 音频类型
 	case ".mp3":
 		return "audio/mpeg"
@@ -51,7 +48,6 @@ func Get(filepath string) string {
 		return "audio/flac"
 	case ".aac":
 		return "audio/aac"
-
 	// 视频类型
 	case ".mp4":
 		return "video/mp4"
@@ -65,7 +61,6 @@ func Get(filepath string) string {
 		return "video/mpeg"
 	case ".mov":
 		return "video/quicktime"
-
 	// 应用类型
 	case ".json":
 		return "application/json"
@@ -85,7 +80,6 @@ func Get(filepath string) string {
 		return "application/x-yaml"
 	case ".toml":
 		return "application/toml"
-
 	// 字体类型
 	case ".woff":
 		return "font/woff"
@@ -95,7 +89,6 @@ func Get(filepath string) string {
 		return "font/ttf"
 	case ".otf":
 		return "font/otf"
-
 	// 脚本/代码类型
 	case ".ts":
 		return "text/typescript"
@@ -103,10 +96,8 @@ func Get(filepath string) string {
 		return "text/jsx"
 	case ".tsx":
 		return "text/tsx"
-
 	// 默认类型
 	default:
 		return "application/octet-stream"
 	}
-
 }

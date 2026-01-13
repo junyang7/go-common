@@ -36,7 +36,6 @@ func UniqueDeep[V any](vList []V) []V {
 	}
 	return oList
 }
-
 func In[V comparable](v V, vList []V) bool {
 	for _, one := range vList {
 		if v == one {

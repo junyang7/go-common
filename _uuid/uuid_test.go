@@ -1,12 +1,15 @@
 package _uuid
 
 import (
-	"fmt"
+	"github.com/junyang7/go-common/_assert"
 	"testing"
 )
 
-func Test_V4(t *testing.T) {
-
-	fmt.Println(V4())
-
+func TestV4(t *testing.T) {
+	{
+		uuid := V4()
+		_assert.Equal(t, len(uuid), 32)
+		_assert.NotContains(t, uuid, "-")
+		_assert.Regexp(t, uuid, "^[a-zA-Z0-9]{32}$")
+	}
 }

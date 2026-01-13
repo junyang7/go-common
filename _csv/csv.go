@@ -5,6 +5,7 @@ import (
 	"github.com/junyang7/go-common/_as"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_list"
+	"io"
 	"os"
 )
 
@@ -14,13 +15,19 @@ type writer struct {
 }
 
 func NewWriter(path string, utf8 bool) *writer {
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0777)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	if utf8 {
-		if _, err := f.Write([]byte("\xEF\xBB\xBF")); nil != err {
+		stat, err := f.Stat()
+		if err != nil {
 			_interceptor.Insure(false).Message(err).Do()
+		}
+		if stat.Size() == 0 {
+			if _, err := f.Write([]byte("\xEF\xBB\xBF")); nil != err {
+				_interceptor.Insure(false).Message(err).Do()
+			}
 		}
 	}
 	w := csv.NewWriter(f)
@@ -30,8 +37,7 @@ func NewWriter(path string, utf8 bool) *writer {
 	}
 }
 func (this *writer) write(list []string) *writer {
-	err := this.w.Write(list)
-	if nil != err {
+	if err := this.w.Write(list); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	return this
@@ -71,10 +77,15 @@ func (this *writer) WriteDictList(dictList []map[string]interface{}, keyList []s
 	}
 	return this
 }
-func (this *writer) Close() {
+func (this *writer) Flush() {
 	this.w.Flush()
-	err := this.f.Close()
-	if nil != err {
+	if err := this.w.Error(); nil != err {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+}
+func (this *writer) Close() {
+	this.Flush()
+	if err := this.f.Close(); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 }
@@ -90,6 +101,7 @@ func NewReader(path string) *reader {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	r := csv.NewReader(f)
+	r.LazyQuotes = true
 	return &reader{
 		f: f,
 		r: r,
@@ -97,7 +109,7 @@ func NewReader(path string) *reader {
 }
 func (this *reader) Read() []string {
 	row, err := this.r.Read()
-	if nil != err {
+	if nil != err && io.EOF != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	return row

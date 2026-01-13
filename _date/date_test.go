@@ -46,3 +46,28 @@ func TestGetByUnixMicro(t *testing.T) {
 		_assert.Equal(t, expect, get)
 	}
 }
+func TestGetListByDateSAndDateE(t *testing.T) {
+	{
+		start := "2024-04-01"
+		end := "2024-04-03"
+		expected := []string{"2024-04-01", "2024-04-02", "2024-04-03"}
+		got := GetListByDateSAndDateE(start, end)
+		_assert.Equal(t, expected, got)
+	}
+	{
+		start := "2024-04-01"
+		end := "2024-04-01"
+		expected := []string{"2024-04-01"}
+		got := GetListByDateSAndDateE(start, end)
+		_assert.Equal(t, expected, got)
+	}
+	{
+		defer func() {
+			r := recover()
+			_assert.NotEqual(t, nil, r)
+		}()
+		start := "2024-04-05"
+		end := "2024-04-01"
+		_ = GetListByDateSAndDateE(start, end)
+	}
+}

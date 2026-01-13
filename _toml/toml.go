@@ -11,6 +11,9 @@ import (
 )
 
 func Encode(data interface{}) []byte {
+	if nil == data {
+		return nil
+	}
 	b, err := toml.Marshal(data)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()

@@ -1,11 +1,10 @@
 package _mod
 
 import (
-	"os"
+	"github.com/junyang7/go-common/_directory"
 	"testing"
 )
 
 func TestInit(t *testing.T) {
-	os.Setenv("GO_TEST", "true")
-	Init()
+	Init(_directory.Name(_directory.Current(), 1) + "/go.mod")
 }

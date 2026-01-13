@@ -2,24 +2,42 @@ package _randomString
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
-//public static function get($size = 32, $string = "0123456789QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm~!@#$%^&*()_+[]\;,./{}:<>?|")
-//    {
-//
-//        $res = "";
-//        $index_max = strlen($string) - 1;
-//        for ($i = 0; $i < $size; $i++) {
-//            $res .= $string[rand(0, $index_max)];
-//        }
-//        return $res;
-//
-//    }
+func Get(size int, char string) string {
+	rand.Seed(time.Now().UnixNano())
+	res := ``
+	for i, j := 0, len(char); i < size; i++ {
+		k := rand.Intn(j)
+		res += char[k : k+1]
+	}
+	return res
+}
+func GetByNumber(size int) string {
+	return Get(size, `0123456789`)
+}
+func GetByAlpha(size int) string {
+	return Get(size, `QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm`)
+}
+func GetByAlphaLower(size int) string {
+	return Get(size, `qwertyuiopasdfghjklzxcvbnm`)
+}
+func GetByAlphaUpper(size int) string {
+	return Get(size, `QWERTYUIOPASDFGHJKLZXCVBNM`)
+}
+func GetByNumberAndAlpha(size int) string {
+	return Get(size, `0123456789QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm`)
+}
+func GetByNumberAndAlphaAndSpecialChar(size int) string {
+	return Get(size, `0123456789QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm~!@#$%^&*()_+[]\;,./{}:<>?|`)
+}
 
 type randomString struct {
-	size int
-	char string
+	size       int
+	char       string
+	filterList []string
 }
 
 func New() *randomString {
@@ -40,12 +58,28 @@ func (this *randomString) Char(char string) *randomString {
 	}
 	return this
 }
+func (this *randomString) FilterList(filterList []string) *randomString {
+	if len(filterList) > 0 {
+		this.filterList = append(this.filterList, filterList...)
+	}
+	return this
+}
+func (this *randomString) Filter(filter string) *randomString {
+	if "" != filter {
+		this.filterList = append(this.filterList, filter)
+	}
+	return this
+}
 func (this *randomString) Get() string {
+	filteredChar := this.char
+	for _, filter := range this.filterList {
+		filteredChar = strings.ReplaceAll(filteredChar, filter, "")
+	}
 	rand.Seed(time.Now().UnixNano())
 	res := ``
-	for i, j := 0, len(this.char); i < this.size; i++ {
+	for i, j := 0, len(filteredChar); i < this.size; i++ {
 		k := rand.Intn(j)
-		res += this.char[k : k+1]
+		res += filteredChar[k : k+1]
 	}
 	return res
 }

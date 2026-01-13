@@ -4,206 +4,237 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"github.com/junyang7/go-common/_as"
 	"github.com/junyang7/go-common/_interceptor"
-	"github.com/junyang7/go-common/_is"
 	"github.com/junyang7/go-common/_json"
 	"github.com/junyang7/go-common/_list"
 	"github.com/junyang7/go-common/_pb"
+	"github.com/junyang7/go-common/_uri"
 	"google.golang.org/grpc"
 	"io"
 	"mime/multipart"
-	"net/http"
-	"net/url"
+	netHttp "net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
 
-func Rpc(addr string, header map[string]string, body []byte) []byte {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+type rpc struct {
+	addr    string
+	header  map[string]string
+	body    []byte
+	timeout time.Duration
+}
+
+func NewRpc() *rpc {
+	return &rpc{
+		timeout: 30 * time.Second,
+		header:  map[string]string{},
+	}
+}
+func (this *rpc) Addr(addr string) *rpc {
+	this.addr = addr
+	return this
+}
+func (this *rpc) Header(k string, v string) *rpc {
+	this.header[strings.ToLower(k)] = v
+	return this
+}
+func (this *rpc) Body(body []byte) *rpc {
+	this.body = body
+	return this
+}
+func (this *rpc) Timeout(timeout time.Duration) *rpc {
+	this.timeout = timeout
+	return this
+}
+func (this *rpc) Do() []byte {
+	conn, err := grpc.Dial(this.addr, grpc.WithInsecure())
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	defer func(conn *grpc.ClientConn) {
 		_ = conn.Close()
 	}(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), this.timeout)
 	defer cancel()
 	r, err := _pb.NewServiceClient(conn).Call(ctx, &_pb.Request{
-		Header: header,
-		Body:   body,
+		Header: this.header,
+		Body:   this.body,
 	})
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	return r.GetResponse()
 }
+func Rpc(addr string, header map[string]string, body []byte, timeout time.Duration) []byte {
+	c := NewRpc()
+	c.Addr(addr)
+	for k, v := range header {
+		c.Header(k, v)
+	}
+	c.Body(body)
+	c.Timeout(timeout)
+	return c.Do()
+}
 
 const (
 	XWwwFormUrlencoded = "application/x-www-form-urlencoded"
 	FormData           = "multipart/form-data"
 	Json               = "application/json"
-	GET                = "GET"
-	POST               = "POST"
-	PUT                = "PUT"
-	DELETE             = "DELETE"
 )
 
-type _http struct {
-	contentType    string
-	method         string
-	url            string
-	data           map[string]interface{}
-	header         map[string]string
-	cookie         []*http.Cookie
-	file           map[string]string
-	httpStatusCode []int
-	needBody       bool
-	body           []byte
+type http struct {
+	contentType string
+	timeout     time.Duration
+	statusCode  []int
+	method      string
+	url         string
+	cookie      []*netHttp.Cookie
+	header      map[string]string
+	data        map[string]string
+	file        map[string]string
+	body        []byte
+	v           interface{}
 }
 
-func Http() *_http {
-	return &_http{
-		contentType:    XWwwFormUrlencoded,
-		method:         GET,
-		header:         map[string]string{},
-		cookie:         []*http.Cookie{},
-		data:           map[string]interface{}{},
-		file:           map[string]string{},
-		httpStatusCode: []int{200},
-		needBody:       true,
+func NewHttp() *http {
+	return &http{
+		contentType: XWwwFormUrlencoded,
+		timeout:     30 * time.Second,
+		statusCode:  []int{200},
+		method:      netHttp.MethodGet,
+		url:         "",
+		cookie:      []*netHttp.Cookie{},
+		header:      map[string]string{},
+		data:        map[string]string{},
+		file:        map[string]string{},
 	}
 }
-func (this *_http) Method(method string) *_http {
+func (this *http) ContentType(contentType string) *http {
+	this.contentType = strings.TrimSpace(contentType)
+	return this
+}
+func (this *http) Timeout(timeout time.Duration) *http {
+	this.timeout = timeout
+	return this
+}
+func (this *http) StatusCode(statusCode ...int) *http {
+	this.statusCode = statusCode
+	return this
+}
+func (this *http) Method(method string) *http {
 	this.method = strings.ToUpper(method)
+	_interceptor.
+		Insure(_list.In(this.method, []string{netHttp.MethodGet, netHttp.MethodPost})).
+		Data(map[string]interface{}{"method": this.method}).
+		Message("不支持的请求方法").
+		Do()
 	return this
 }
-func (this *_http) Url(url string) *_http {
-	this.url = url
+func (this *http) Url(url string) *http {
+	this.url = strings.TrimSpace(url)
 	return this
 }
-func (this *_http) ContentType(contentType string) *_http {
-	this.contentType = contentType
-	return this
-}
-func (this *_http) Header(name string, value string) *_http {
-	this.header[strings.ToLower(name)] = value
-	return this
-}
-func (this *_http) Cookie(cookie *http.Cookie) *_http {
+func (this *http) Cookie(cookie *netHttp.Cookie) *http {
 	this.cookie = append(this.cookie, cookie)
 	return this
 }
-func (this *_http) Data(data map[string]interface{}) *_http {
+func (this *http) Header(name string, value string) *http {
+	this.header[strings.ToLower(strings.TrimSpace(name))] = value
+	return this
+}
+func (this *http) Data(data map[string]string) *http {
 	this.data = data
 	return this
 }
-func (this *_http) Body(body []byte) *_http {
-	this.body = body
-	return this
-}
-func (this *_http) File(name string, path string) *_http {
+func (this *http) File(name string, path string) *http {
 	this.file[name] = path
 	return this
 }
-func (this *_http) HttpStatusCode(httpStatusCode []int) *_http {
-	this.httpStatusCode = httpStatusCode
+func (this *http) Bind(v interface{}) *http {
+	this.v = v
 	return this
 }
-func (this *_http) NeedBody(needBody bool) *_http {
-	this.needBody = needBody
-	return this
-}
-func (this *_http) Do() string {
-	_url := this.url
-	_body := []byte{}
-	switch this.method {
-	case "GET":
-		this.contentType = XWwwFormUrlencoded
-		if !_is.Empty(this.data) {
-			parameter := url.Values{}
-			for k, v := range this.data {
-				parameter.Set(k, _as.String(v))
-			}
-			_url += "?" + parameter.Encode()
+func (this *http) Do() []byte {
+	_interceptor.Insure(this.url != "").Message("url不能为空").Do()
+	url := this.url
+	body := []byte{}
+	if this.contentType != "" {
+		this.header["content-type"] = this.contentType
+	}
+	if this.method == netHttp.MethodGet {
+		if len(this.data) > 0 {
+			url = url + "?" + _uri.Build(this.data)
 		}
-		break
-	default:
-		switch this.contentType {
-		case XWwwFormUrlencoded:
-			if !_is.Empty(this.data) {
-				parameter := url.Values{}
-				for k, v := range this.data {
-					parameter.Set(k, _as.String(v))
-				}
-				_body = []byte(parameter.Encode())
+	} else if this.method == netHttp.MethodPost {
+		if strings.HasPrefix(this.header["content-type"], FormData) {
+			bf := &bytes.Buffer{}
+			bw := multipart.NewWriter(bf)
+			for k, v := range this.data {
+				_ = bw.WriteField(k, v)
 			}
-			break
-		case FormData:
-			if !_is.Empty(this.data) || _is.Empty(this.file) {
-				bf := &bytes.Buffer{}
-				bw := multipart.NewWriter(bf)
-				for k, v := range this.data {
-					if err := bw.WriteField(k, _as.String(v)); nil != err {
-						_interceptor.Insure(false).Message(err).Do()
-					}
-				}
-				for name, path := range this.file {
-					f, err := os.Open(path)
-					if nil != err {
+			for k, v := range this.file {
+				func() {
+					f, err := os.Open(v)
+					if err != nil {
 						_interceptor.Insure(false).Message(err).Do()
 					}
 					defer f.Close()
-					fw, err := bw.CreateFormFile(name, path)
-					if nil != err {
-						_interceptor.Insure(false).Message(err).Do()
-					}
-					if _, err = io.Copy(fw, f); nil != err {
-						_interceptor.Insure(false).Message(err).Do()
-					}
-				}
-				_ = bw.Close()
-				this.contentType = bw.FormDataContentType()
-				_body = bf.Bytes()
+					fw, _ := bw.CreateFormFile(k, filepath.Base(v))
+					_, _ = io.Copy(fw, f)
+				}()
 			}
-			break
-		case Json:
-			if !_is.Empty(this.data) {
-				_body = _json.Encode(this.data)
+			_ = bw.Close()
+			body = bf.Bytes()
+			this.header["content-type"] = bw.FormDataContentType()
+		} else if strings.HasPrefix(this.header["content-type"], Json) {
+			if len(this.body) > 0 {
+				body = this.body
+			} else if len(this.data) > 0 {
+				body = _json.Encode(this.data)
 			}
-			if !_is.Empty(this.body) {
-				_body = this.body
+		} else {
+			if len(this.data) > 0 {
+				body = []byte(_uri.Build(this.data))
 			}
 		}
-		break
 	}
-	req, err := http.NewRequest(this.method, _url, bytes.NewReader(_body))
+	req, err := netHttp.NewRequest(this.method, url, bytes.NewReader(body))
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
-	}
-	req.Header.Set("content-type", this.contentType)
-	for k, v := range this.header {
-		req.Header.Set(k, v)
 	}
 	for _, cookie := range this.cookie {
 		req.AddCookie(cookie)
 	}
-	http.DefaultClient.Transport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
-	res, err := http.DefaultClient.Do(req)
+	for k, v := range this.header {
+		req.Header.Set(k, v)
+	}
+	client := &netHttp.Client{
+		Timeout: this.timeout,
+		Transport: &netHttp.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	res, err := client.Do(req)
+	_interceptor.
+		Insure(nil == err).
+		Message(err).
+		Do()
+	_interceptor.
+		Insure(_list.In(res.StatusCode, this.statusCode)).
+		Data(map[string]interface{}{"state_code": res.StatusCode}).
+		Message(res.StatusCode).
+		Do()
+	defer res.Body.Close()
+	b, err := io.ReadAll(res.Body)
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
-	if !_list.In(res.StatusCode, this.httpStatusCode) {
-		_interceptor.Insure(false).Message(res.StatusCode).Do()
+	if strings.HasPrefix(strings.ToLower(res.Header.Get("content-type")), Json) {
+		_json.Decode(b, this.v)
 	}
-	if this.needBody {
-		defer res.Body.Close()
-		b, err := io.ReadAll(res.Body)
-		if nil != err {
-			_interceptor.Insure(false).Message(err).Do()
-		}
-		return string(b)
-	}
-	return ""
+	return b
 }

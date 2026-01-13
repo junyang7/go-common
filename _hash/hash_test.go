@@ -65,6 +65,24 @@ func TestHmacSha512(t *testing.T) {
 	}
 }
 func TestDecodeString(t *testing.T) {
-	// no need to test
-	t.SkipNow()
+	{
+		hexStr := "48656c6c6f20576f726c64"
+		expected := []byte("Hello World")
+		result := DecodeString(hexStr)
+		_assert.Equal(t, expected, result)
+	}
+	{
+		hexStr := "48656c6c6fG25756f726c64"
+		defer func() {
+			r := recover()
+			_assert.NotNil(t, r)
+		}()
+		DecodeString(hexStr)
+	}
+	{
+		hexStr := ""
+		expected := []byte{}
+		result := DecodeString(hexStr)
+		_assert.Equal(t, expected, result)
+	}
 }

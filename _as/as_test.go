@@ -382,7 +382,6 @@ func TestString(t *testing.T) {
 		}
 	}
 }
-
 func TestBool(t *testing.T) {
 	// bool
 	{
@@ -767,7 +766,6 @@ func TestBool(t *testing.T) {
 		_assert.Equal(t, expect, get)
 	}
 }
-
 func TestFloat64(t *testing.T) {
 	// float64
 	{
@@ -1152,7 +1150,6 @@ func TestFloat64(t *testing.T) {
 		_assert.EqualByFloat(t, expect, get)
 	}
 }
-
 func TestByteList(t *testing.T) {
 	// []byte
 	{
@@ -1194,7 +1191,6 @@ func TestByteList(t *testing.T) {
 		}
 	}
 }
-
 func TestInt64(t *testing.T) {
 	// []byte
 	{
@@ -1543,7 +1539,6 @@ func TestInt64(t *testing.T) {
 		_assert.Equal(t, expect, get)
 	}
 }
-
 func TestInt(t *testing.T) {
 	// []byte
 	{
@@ -1892,7 +1887,6 @@ func TestInt(t *testing.T) {
 		_assert.Equal(t, expect, get)
 	}
 }
-
 func TestUint64(t *testing.T) {
 	// []byte
 	{
@@ -2241,7 +2235,6 @@ func TestUint64(t *testing.T) {
 		_assert.Equal(t, expect, get)
 	}
 }
-
 func TestUint(t *testing.T) {
 	// []byte
 	{

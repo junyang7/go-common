@@ -72,7 +72,7 @@ func Open(path string, flag int, perm os.FileMode) *file {
 	return this
 }
 func (this *file) Truncate(size int64) *file {
-	if err := this.f.Truncate(1000); nil != err {
+	if err := this.f.Truncate(size); nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	return this

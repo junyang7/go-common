@@ -6,14 +6,14 @@ type K interface {
 type V interface{}
 
 func KeyList[k K, v V](elementList map[k]v) []k {
-	var res []k
+	res := make([]k, 0, len(elementList))
 	for key, _ := range elementList {
 		res = append(res, key)
 	}
 	return res
 }
 func ValueList[k K, v V](elementList map[k]v) []v {
-	var res []v
+	res := make([]v, 0, len(elementList))
 	for _, v := range elementList {
 		res = append(res, v)
 	}

@@ -6,17 +6,10 @@ import (
 	"github.com/junyang7/go-common/_file"
 	"github.com/junyang7/go-common/_interceptor"
 	"golang.org/x/mod/modfile"
-	"os"
 )
 
-func Init() {
+func Init(path string) {
 
-	path := ""
-	if _, ok := os.LookupEnv("GO_TEST"); ok {
-		path = "../../go.mod"
-	} else {
-		path = "go.mod"
-	}
 	_interceptor.Insure(_file.Exists(path)).Message("go.mod文件不存在").Do()
 
 	f, err := modfile.Parse(path, _file.ReadAll(path), nil)

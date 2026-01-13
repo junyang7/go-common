@@ -5,19 +5,27 @@ import (
 	"github.com/junyang7/go-common/_cmd"
 	"github.com/junyang7/go-common/_directory"
 	"github.com/junyang7/go-common/_file"
+	"github.com/junyang7/go-common/_name"
 	"github.com/junyang7/go-common/_sql"
 	"github.com/junyang7/go-common/_string"
-	"os"
 	"strings"
 )
 
-const TplDao = `package dao
+const Tpl = `package dao
 import "github.com/junyang7/go-common/_sql"
 func @1@() *_sql.Sql {
 	return _sql.New().Business("@2@").Table("@3@")
 }`
 
-func Build() {
+func Build(root string, dbName string, tbName string) {
+	tpl := Tpl
+	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(dbName+"_"+tbName))
+	tpl = _string.ReplaceAll(tpl, "@2@", dbName)
+	tpl = _string.ReplaceAll(tpl, "@3@", tbName)
+	path := root + "/" + strings.ToLower(dbName) + "_" + strings.ToLower(tbName) + ".go"
+	_file.Write(path, tpl, 0644)
+}
+func BuildByAuto() {
 	root := _directory.Current() + "/dao"
 	poolDict := _sql.GetPoolDict()
 	for uk, poolList := range poolDict {
@@ -26,12 +34,7 @@ func Build() {
 		tableList := _sql.New().Pool(pool).Sql(fmt.Sprintf("SELECT `table_name` as `table` FROM `information_schema`.`tables` where `table_schema` = '%s'", dbName)).Query()
 		for _, table := range tableList {
 			tbName := table["table"]
-			tplDao := TplDao
-			tplDao = _string.ReplaceAll(tplDao, "@1@", _string.ToUpperCamelCase(dbName+"_"+tbName))
-			tplDao = _string.ReplaceAll(tplDao, "@2@", dbName)
-			tplDao = _string.ReplaceAll(tplDao, "@3@", tbName)
-			path := root + "/" + dbName + "_" + tbName + ".go"
-			_file.Write(path, tplDao, os.ModePerm)
+			Build(root, dbName, tbName)
 		}
 	}
 	cmd := fmt.Sprintf("cd %s && go fmt ./...", root)

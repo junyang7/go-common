@@ -8,17 +8,13 @@ import (
 	"strings"
 )
 
-// router 内部路由构建辅助结构
 type router struct {
-	prefix               string
-	middlewareBeforeList []func(ctx *_context.Context)
-	middlewareAfterList  []func(ctx *_context.Context)
-	methodList           []string
+	business             string                        // 业务标识
+	prefix               string                        // 前缀
+	middlewareBeforeList []func(ctx *_context.Context) // 中间件：前
+	middlewareAfterList  []func(ctx *_context.Context) // 中间件：后
+	methodList           []string                      // 方法列表
 }
-
-// 全局默认路由管理器（向后兼容）
-var defaultManager = NewManager()
-var groupList []*router = []*router{}
 
 func Any(rule string, call func(ctx *_context.Context)) {
 	MethodList([]string{"ANY"}, rule, call)
@@ -72,35 +68,24 @@ func Prefix(prefix string) *router {
 	r.Prefix(prefix)
 	return r
 }
+func Business(business string) *router {
+	r := &router{}
+	r.Business(business)
+	return r
+}
 func Group(group func()) {
 	group()
 }
 
-// Router 路由定义
 type Router struct {
-	Rule                 string
-	Call                 func(ctx *_context.Context)
-	MethodList           []string
-	MiddlewareBeforeList []func(ctx *_context.Context)
-	MiddlewareAfterList  []func(ctx *_context.Context)
-	ParameterList        []string
-	IsRegexp             bool
-}
-
-// RouterList 全局路由列表（向后兼容，已废弃，建议使用 Manager）
-// Deprecated: 使用 Manager 替代以支持多实例和线程安全
-var RouterList []*Router = []*Router{}
-
-// GetDefaultManager 获取默认路由管理器
-func GetDefaultManager() *Manager {
-	return defaultManager
-}
-
-// ResetDefaultManager 重置默认路由管理器（仅用于测试）
-func ResetDefaultManager() {
-	defaultManager = NewManager()
-	RouterList = []*Router{}
-	groupList = []*router{}
+	Business             string                        // 业务标识
+	Rule                 string                        // 路径
+	Call                 func(ctx *_context.Context)   // 处理方法
+	MethodList           []string                      // 方法列表
+	MiddlewareBeforeList []func(ctx *_context.Context) // 前中间件列表
+	MiddlewareAfterList  []func(ctx *_context.Context) // 后中间件列表
+	Parameter            map[string]string             // 正则路径解析参数
+	IsRegexp             bool                          // 是否使用正则匹配
 }
 
 func (this *router) Any(rule string, call func(ctx *_context.Context)) {
@@ -150,7 +135,7 @@ func (this *router) MethodList(methodList []string, rule string, call func(ctx *
 		MethodList:           groupMethodList,
 		MiddlewareBeforeList: groupMiddlewareBeforeList,
 		MiddlewareAfterList:  groupMiddlewareAfterList,
-		ParameterList:        []string{},
+		Parameter:            map[string]string{},
 		IsRegexp:             false,
 	}
 	rule = groupPrefix + `/` + strings.Trim(rule, `/`)
@@ -163,7 +148,7 @@ func (this *router) MethodList(methodList []string, rule string, call func(ctx *
 			matchedList := regexp.MustCompile(`:(\w+)(.*)`).FindStringSubmatch(rulePart)
 			if len(matchedList) > 0 {
 				r.IsRegexp = true
-				r.ParameterList = append(r.ParameterList, matchedList[1])
+				r.Parameter[matchedList[1]] = ""
 				if _is.Empty(matchedList[2]) {
 					rulePartList = append(rulePartList, `([\w-]+)`)
 				} else {
@@ -178,10 +163,7 @@ func (this *router) MethodList(methodList []string, rule string, call func(ctx *
 	if r.IsRegexp {
 		r.Rule = `^` + r.Rule + `$`
 	}
-	
-	// 同时添加到全局列表（向后兼容）和默认管理器
 	RouterList = append(RouterList, r)
-	defaultManager.add(r)
 }
 func (this *router) MiddlewareBefore(middleware func(ctx *_context.Context)) *router {
 	return this.MiddlewareBeforeList([]func(ctx *_context.Context){middleware})
@@ -204,6 +186,13 @@ func (this *router) Prefix(prefix string) *router {
 	}
 	return this
 }
+func (this *router) Business(business string) *router {
+	prefixTrimmed := strings.Trim(business, `/`)
+	if len(prefixTrimmed) > 0 {
+		this.business = business
+	}
+	return this
+}
 func (this *router) Group(group func()) {
 	groupList = append(groupList, this)
 	group()
@@ -211,3 +200,6 @@ func (this *router) Group(group func()) {
 		groupList = groupList[0 : l-1]
 	}
 }
+
+var groupList []*router = []*router{}
+var RouterList []*Router = []*Router{}

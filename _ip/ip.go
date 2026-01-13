@@ -6,17 +6,26 @@ import (
 )
 
 func GetByLocal() string {
-	res := "127.0.0.1"
+	return GetListByLocal()[0]
+}
+func GetListByLocal() []string {
+	var res []string
 	addrList, err := net.InterfaceAddrs()
 	if err != nil {
 		_interceptor.Insure(false).Message(err).Do()
+		return res
 	}
 	for _, addr := range addrList {
-		ipNet, _ := addr.(*net.IPNet)
-		if ipNet.IP.To4() != nil && !ipNet.IP.IsLoopback() {
-			res = ipNet.IP.String()
-			break
+		ipNet, ok := addr.(*net.IPNet)
+		if !ok {
+			continue
 		}
+		if ipNet.IP.To4() != nil && !ipNet.IP.IsLoopback() {
+			res = append(res, ipNet.IP.String())
+		}
+	}
+	if len(res) == 0 {
+		res = append(res, "127.0.0.1")
 	}
 	return res
 }

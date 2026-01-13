@@ -1,200 +1,221 @@
 package _server
 
 import (
-	"context"
 	"fmt"
 	"github.com/junyang7/go-common/_conf"
+	"github.com/junyang7/go-common/_directory"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_json"
-	"github.com/junyang7/go-common/_structure"
+	"net"
 	"net/http"
-	"os"
-	"path/filepath"
+	"regexp"
+	"strings"
 )
 
-// webEngine Web 静态文件服务器引擎
+type webEngineConf struct {
+	Debug   bool     `json:"debug"`   // 调试模式
+	Network string   `json:"network"` // 服务协议
+	Host    string   `json:"host"`    // 主机
+	Port    string   `json:"port"`    // 端口
+	Origin  []string `json:"origin"`  // 允许跨域配置列表
+	Root    string   `json:"root"`    // 文件根目录
+}
 type webEngine struct {
-	*BaseEngine
-	root string
+	debug   bool
+	network string
+	host    string
+	port    string
+	origin  []string
+	root    string
 }
 
-// Web 创建 Web 引擎
 func Web() *webEngine {
 	return &webEngine{
-		BaseEngine: newBaseEngine(),
+		debug:   false,
+		network: "tcp",
+		host:    "0.0.0.0",
+		port:    "0",
+		origin:  []string{},
+		root:    "",
 	}
 }
-
-// Load 从配置加载（链式调用）
-func (w *webEngine) Load(conf _conf.Conf, business string) *webEngine {
-	load(conf)
-	raw := _conf.Get(business).Value()
-	var serverWeb _structure.ServerWeb
-	
-	// 使用更高效的类型断言或 mapstructure
-	if err := decodeConfig(raw, &serverWeb); err != nil {
-		_interceptor.Insure(false).
-			Message("Web配置解析失败").
-			Data(map[string]interface{}{"error": err.Error()}).
-			Do()
+func (this *webEngine) Load(conf _conf.Conf, business string) *webEngine {
+	_conf.Load(conf)
+	var c webEngineConf
+	_json.Decode(_json.Encode(_conf.Get(business).Value()), &c)
+	this.debug = c.Debug
+	this.network = c.Network
+	this.host = c.Host
+	this.port = c.Port
+	this.origin = c.Origin
+	this.root = c.Root
+	return this
+}
+func (this *webEngine) Debug(debug bool) *webEngine {
+	this.debug = debug
+	return this
+}
+func (this *webEngine) Network(network string) *webEngine {
+	this.network = strings.TrimSpace(network)
+	return this
+}
+func (this *webEngine) Host(host string) *webEngine {
+	this.host = strings.TrimSpace(host)
+	return this
+}
+func (this *webEngine) Port(port string) *webEngine {
+	this.port = strings.TrimSpace(port)
+	return this
+}
+func (this *webEngine) Origin(origin []string) *webEngine {
+	this.origin = origin
+	return this
+}
+func (this *webEngine) Root(root string) *webEngine {
+	this.root = strings.TrimSpace(root)
+	return this
+}
+func (this *webEngine) getDebug() bool {
+	return this.debug
+}
+func (this *webEngine) getNetwork() string {
+	if len(this.network) > 0 {
+		return this.network
 	}
-	
-	w.setHost(serverWeb.Host)
-	w.setPort(serverWeb.Port)
-	w.setDebug(serverWeb.Debug)
-	w.setOrigin(serverWeb.Origin)
-	w.root = serverWeb.Root
-	
-	return w
+	return "tcp"
 }
-
-// Debug 设置调试模式（链式调用）
-func (w *webEngine) Debug(debug bool) *webEngine {
-	w.setDebug(debug)
-	return w
-}
-
-// Network 设置网络类型（链式调用）
-func (w *webEngine) Network(network string) *webEngine {
-	w.setNetwork(network)
-	return w
-}
-
-// Host 设置主机地址（链式调用）
-func (w *webEngine) Host(host string) *webEngine {
-	w.setHost(host)
-	return w
-}
-
-// Port 设置端口（链式调用）
-func (w *webEngine) Port(port string) *webEngine {
-	w.setPort(port)
-	return w
-}
-
-// Origin 设置跨域白名单（链式调用）
-func (w *webEngine) Origin(origin []string) *webEngine {
-	w.setOrigin(origin)
-	return w
-}
-
-// Root 设置静态文件根目录（链式调用）
-func (w *webEngine) Root(root string) *webEngine {
-	w.root = root
-	return w
-}
-
-// RouterManager 设置自定义路由管理器（链式调用）
-// 注意: 仅用于测试场景，生产环境使用默认全局路由即可
-func (w *webEngine) RouterManager(manager *_router.Manager) *webEngine {
-	w.setRouterManager(manager)
-	return w
-}
-
-// getRoot 获取静态文件根目录
-func (w *webEngine) getRoot() string {
-	return w.root
-}
-
-// validateConfig 验证 Web 配置
-func (w *webEngine) validateConfig() error {
-	if err := w.BaseEngine.validateConfig(); err != nil {
-		return err
+func (this *webEngine) getHost() string {
+	if len(this.host) > 0 {
+		return this.host
 	}
-	
-	// 验证 root 路径
-	if w.root == "" {
-		return fmt.Errorf("root directory cannot be empty")
-	}
-	
-	// 检查目录是否存在
-	if info, err := os.Stat(w.root); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("root directory does not exist: %s", w.root)
-		}
-		return fmt.Errorf("cannot access root directory: %w", err)
-	} else if !info.IsDir() {
-		return fmt.Errorf("root path is not a directory: %s", w.root)
-	}
-	
-	// 转换为绝对路径
-	absRoot, err := filepath.Abs(w.root)
-	if err != nil {
-		return fmt.Errorf("cannot resolve absolute path: %w", err)
-	}
-	w.root = absRoot
-	
-	return nil
+	return "0.0.0.0"
 }
-
-// Run 启动 Web 服务器（阻塞模式，适配旧 API）
-func (w *webEngine) Run() {
-	ctx := context.Background()
-	if err := w.RunWithContext(ctx); err != nil && err != http.ErrServerClosed {
-		_interceptor.Insure(false).Message(err).Do()
+func (this *webEngine) getPort() string {
+	if len(this.port) > 0 {
+		return this.port
 	}
+	return "0"
 }
-
-// RunWithContext 启动 Web 服务器（支持 context 控制）
-func (w *webEngine) RunWithContext(ctx context.Context) error {
-	// 1. 验证配置
-	if err := w.validateConfig(); err != nil {
-		return fmt.Errorf("config validation failed: %w", err)
-	}
-	
-	// 2. 执行启动前回调
-	if err := w.executeBeforeStart(); err != nil {
-		return fmt.Errorf("before start callback failed: %w", err)
-	}
-	
-	// 3. 监听端口
-	if err := w.listen(ctx); err != nil {
-		return err
-	}
-	
-	// 4. 冻结路由表
-	w.routerManager.Freeze()
-	
-	// 5. 创建 HTTP 服务器
+func (this *webEngine) getOrigin() []string {
+	return this.origin
+}
+func (this *webEngine) getRoot() string {
+	return this.root
+}
+func (this *webEngine) getAddr() string {
+	return fmt.Sprintf("%s:%s", this.getHost(), this.getPort())
+}
+func (this *webEngine) check() *webEngine {
+	this.checkRoot()
+	return this
+}
+func (this *webEngine) checkRoot() *webEngine {
+	_interceptor.
+		Insure(this.root != "").
+		Data(map[string]string{"root": this.root}).
+		Message("请设置web根目录").
+		Do()
+	_interceptor.
+		Insure(strings.HasPrefix(this.root, "/")).
+		Data(map[string]string{"root": this.root}).
+		Message("web根目录必须是绝对路径").
+		Do()
+	_interceptor.
+		Insure(_directory.Exists(this.root)).
+		Data(map[string]string{"root": this.root}).
+		Message("web根目录不存在").
+		Do()
+	return this
+}
+func (this *webEngine) Run() {
+	this.check()
 	mux := http.NewServeMux()
-	mux.Handle("/", http.FileServer(http.Dir(w.getRoot())))
-	
+	mux.HandleFunc("/", this.ServeWeb)
 	server := &http.Server{
 		Handler: mux,
 	}
-	
-	// 6. 执行启动后回调
-	w.executeAfterStart()
-	
-	// 7. 监听 context 取消信号（优雅关闭）
-	go func() {
-		<-ctx.Done()
-		w.executeBeforeStop()
-		
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancel()
-		
-		if err := server.Shutdown(shutdownCtx); err != nil {
-			fmt.Printf("⚠️  Server shutdown error: %v\n", err)
-		}
-		
-		w.shutdown()
-		w.executeAfterStop()
-	}()
-	
-	// 8. 启动服务（阻塞）
-	err := server.Serve(w.listener)
-	if err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("server error: %w", err)
+	listener, err := net.Listen(this.getNetwork(), this.getAddr())
+	if nil != err {
+		_interceptor.Insure(false).Message(err).Do()
 	}
-	
-	return nil
+	fmt.Printf("Server is running on: %s\n", listener.Addr().String())
+	if err := server.Serve(listener); nil != err && err != http.ErrServerClosed {
+		_interceptor.Insure(false).Message(err).Do()
+	}
+	fmt.Println("Server stopped.")
+}
+func (this *webEngine) ServeWeb(w http.ResponseWriter, r *http.Request) {
+	p := &webEngineProcessor{
+		debug:   this.getDebug(),
+		network: this.getNetwork(),
+		host:    this.getHost(),
+		port:    this.getPort(),
+		origin:  this.getOrigin(),
+		root:    this.getRoot(),
+		w:       w,
+		r:       r,
+	}
+	p.do()
 }
 
-// decodeConfig 配置解码辅助函数
-func decodeConfig(raw interface{}, target interface{}) error {
-	// 使用 JSON 编解码实现类型转换（临时方案，后续可优化为 mapstructure）
-	encoded := _json.Encode(raw)
-	return _json.Decode(encoded, target)
+type webEngineProcessor struct {
+	debug   bool
+	network string
+	host    string
+	port    string
+	origin  []string
+	root    string
+	w       http.ResponseWriter
+	r       *http.Request
 }
 
+func (this *webEngineProcessor) do() {
+	defer func() {
+		if err := recover(); nil != err {
+			this.exception(err)
+		}
+	}()
+	this.checkOrigin()
+	this.w.Header().Set("access-control-allow-credentials", "true")
+	if this.r.Method == http.MethodOptions {
+		return
+	}
+	this.doMiddlewareBefore()
+	this.doBusiness()
+	this.doMiddlewareAfter()
+}
+func (this *webEngineProcessor) exception(err any) {
+	// TODO 预留，记录日志，返回404或者500
+}
+func (this *webEngineProcessor) checkOrigin() {
+	if len(this.origin) == 0 {
+		return
+	}
+	origin := this.r.Header.Get("Origin")
+	matchedList := regexp.MustCompile("(\\S+)://([^:]+):?(\\d+)?").FindStringSubmatch(strings.Trim(origin, "/"))
+	if len(matchedList) == 0 {
+		return
+	}
+	for _, o := range this.origin {
+		if o == "*" || (len(matchedList) >= 3 && matchedList[2] == o) || (strings.HasPrefix(o, ".") && strings.HasSuffix(matchedList[2], o)) {
+			headerValue := matchedList[1] + "://" + matchedList[2]
+			if len(matchedList) >= 4 && matchedList[3] != "" {
+				headerValue += ":" + matchedList[3]
+			}
+			this.w.Header().Set("access-control-allow-origin", headerValue)
+			this.w.Header().Set("access-control-allow-methods", "GET,POST,OPTIONS")
+			this.w.Header().Set("access-control-allow-headers", "content-type,authorization")
+			this.w.Header().Set("access-control-expose-headers", "content-type,authorization")
+			return
+		}
+	}
+}
+func (this *webEngineProcessor) doMiddlewareBefore() {
+	// TODO 预留
+}
+func (this *webEngineProcessor) doBusiness() {
+	http.FileServer(http.Dir(this.root)).ServeHTTP(this.w, this.r)
+}
+func (this *webEngineProcessor) doMiddlewareAfter() {
+	// TODO 预留
+}

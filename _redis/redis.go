@@ -50,7 +50,7 @@ func open(machine *Machine) (pool *redis.Client) {
 	if nil != err {
 		_interceptor.Insure(false).Message(err).Do()
 	}
-	opt.PoolSize = 50
+	opt.PoolSize = 10
 	opt.MinIdleConns = 5
 	pool = redis.NewClient(opt)
 	return pool
@@ -72,6 +72,9 @@ func Load() {
 			poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
 		}
 	}
+}
+func GetPoolDict() map[string][]*redis.Client {
+	return poolDict
 }
 
 type Redis struct {
@@ -159,7 +162,7 @@ func (this *Redis) getPool() *redis.Client {
 		poolDict[poolDictName] = append(poolDict[poolDictName], open(machine))
 		return pool
 	}
-	_interceptor.Insure(false).Message("没有找到相关配置").Do()
+	_interceptor.Insure(false).Message("[redis]没有找到相关配置").Do()
 	return nil
 }
 func (this *Redis) getContext() context.Context {

@@ -10,8 +10,12 @@ func TestGetByLocal(t *testing.T) {
 	{
 		ip := GetByLocal()
 		matchedList := regexp.MustCompile(`^\d+\.\d+\.\d+\.\d+$`).FindStringSubmatch(ip)
-		var expect int = 1
-		get := len(matchedList)
-		_assert.Equal(t, expect, get)
+		_assert.Equal(t, 1, len(matchedList))
+	}
+}
+func TestGetListByLocal(t *testing.T) {
+	{
+		ipList := GetListByLocal()
+		_assert.True(t, len(ipList) > 0)
 	}
 }

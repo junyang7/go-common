@@ -66,3 +66,11 @@ func TestGetByDatetimeMilli(t *testing.T) {
 		_assert.EqualByTime(t, expect, get)
 	}
 }
+func TestFormat(t *testing.T) {
+	{
+		currentTime := time.Now()
+		expected := currentTime.Format(FormatDatetime)
+		result := Format(currentTime, FormatDatetime)
+		_assert.Equal(t, result, expected)
+	}
+}

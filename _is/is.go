@@ -1,58 +1,80 @@
 package _is
 
 import (
-	"fmt"
 	"reflect"
 )
 
-// Empty 判断一个值是否是空
-// bool,int8,int16,int32,int64,int,uint8,uint16,uint32,uint64,uint,float32,float64,string,nil,[]x,map[x]x,[x]x,chan x,*x
 func Empty(value interface{}) bool {
-	var t string = fmt.Sprintf("%T", value)
-	switch t {
-	case `bool`:
-		return false == value.(bool)
-	case `int8`:
-		return 0 == value.(int8)
-	case `int16`:
-		return 0 == value.(int16)
-	case `int32`:
-		return 0 == value.(int32)
-	case `int64`:
-		return 0 == value.(int64)
-	case `int`:
-		return 0 == value.(int)
-	case `uint8`:
-		return 0 == value.(uint8)
-	case `uint16`:
-		return 0 == value.(uint16)
-	case `uint32`:
-		return 0 == value.(uint32)
-	case `uint64`:
-		return 0 == value.(uint64)
-	case `uint`:
-		return 0 == value.(uint)
-	case `float32`:
-		return 0 == value.(float32)
-	case `float64`:
-		return 0 == value.(float64)
-	case `string`:
-		return "" == value.(string)
-	case `<nil>`:
-		return true
-	}
-	if `<nil>` == fmt.Sprintf("%v", value) {
+	if value == nil {
 		return true
 	}
 	v := reflect.ValueOf(value)
-	k := v.Kind().String()
-	switch k {
-	case `slice`, `map`, `chan`:
+	switch v.Kind() {
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.String:
+		return v.String() == ""
+	}
+	switch v.Kind() {
+	case reflect.Slice, reflect.Map, reflect.Chan:
 		return v.Len() == 0
-	case `array`:
+	case reflect.Array, reflect.Struct:
 		return v.IsZero()
-	case `ptr`:
+	case reflect.Ptr:
 		return v.IsNil()
+	}
+	if v.IsNil() {
+		return true
+	}
+	return false
+}
+func Numeric(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+func Alpha(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, c := range s {
+		if (c < 'A' || c > 'Z') && (c < 'a' || c > 'z') {
+			return false
+		}
+	}
+	return true
+}
+func AlphaLower(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, c := range s {
+		if c < 'a' || c > 'z' {
+			return false
+		}
+	}
+	return true
+}
+func AlphaUpper(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, c := range s {
+		if c < 'A' || c > 'Z' {
+			return false
+		}
 	}
 	return true
 }

@@ -45,16 +45,12 @@ func TestDecode(t *testing.T) {
 		_assert.Equal(t, expect, get)
 	}
 }
-
-// 测试空字符串
 func TestEncodeEmpty(t *testing.T) {
 	var give string = ""
 	encoded := Encode(give)
 	decoded := Decode(encoded)
 	_assert.Equal(t, give, decoded)
 }
-
-// 测试可逆性（编码后解码应该等于原文）
 func TestEncodeDecodeReversibility(t *testing.T) {
 	testCases := []string{
 		"",
@@ -68,33 +64,24 @@ func TestEncodeDecodeReversibility(t *testing.T) {
 		"包含特殊字符: + / = ? & # @",
 		"very long text that needs to be encoded and decoded properly to ensure the implementation is correct for all lengths",
 	}
-
 	for _, original := range testCases {
 		encoded := Encode(original)
 		decoded := Decode(encoded)
 		_assert.Equal(t, original, decoded)
 	}
 }
-
-// 测试 URL 安全字符（验证不包含 + / = 等字符）
 func TestURLSafeCharacters(t *testing.T) {
-	// 包含会被替换的特殊字符的数据
 	testData := []string{
 		"test+plus",
 		"test/slash",
 		"test=equal",
-		string([]byte{0, 1, 2, 3, 4, 5}), // 二进制数据
+		string([]byte{0, 1, 2, 3, 4, 5}),
 	}
-
 	for _, data := range testData {
 		encoded := Encode(data)
-
-		// 验证编码结果不包含 URL 不安全字符
 		_assert.NotContains(t, encoded, "+")
 		_assert.NotContains(t, encoded, "/")
 		_assert.NotContains(t, encoded, "=")
-
-		// 验证可以正确解码
 		decoded := Decode(encoded)
 		_assert.Equal(t, data, decoded)
 	}

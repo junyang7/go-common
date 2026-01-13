@@ -11,11 +11,9 @@ type DatetimeSE struct {
 	DatetimeE string
 }
 
-func FormatByY(datetimeS string, datetimeE string) (o []DatetimeSE) {
-
+func BuildByY(datetimeS string, datetimeE string) (o []DatetimeSE) {
 	yS := _as.Int(_time.GetByDatetime(datetimeS).Format(_time.Year))
 	yE := _as.Int(_time.GetByDatetime(datetimeE).Format(_time.Year))
-
 	if yE == yS {
 		datetimeSE := DatetimeSE{DatetimeS: datetimeS, DatetimeE: datetimeE}
 		o = append(o, datetimeSE)
@@ -35,24 +33,17 @@ func FormatByY(datetimeS string, datetimeE string) (o []DatetimeSE) {
 			o = append(o, datetimeSE)
 		}
 	}
-
 	return o
-
 }
-func FormatByYm(datetimeS string, datetimeE string) (o []DatetimeSE) {
-
+func BuildByYm(datetimeS string, datetimeE string) (o []DatetimeSE) {
 	ymMin := _as.Int(_time.GetByDatetime(datetimeS).Format(_time.FormatYm) + "01")
 	ymMax := _as.Int(_time.GetByDatetime(datetimeE).Format(_time.FormatYm) + "01")
 	ymTep := ymMin
-
 	for {
-
 		if ymTep > ymMax {
 			break
 		}
-
 		datetimeSE := DatetimeSE{}
-
 		if ymTep == ymMin {
 			datetimeSE.DatetimeS = datetimeS
 			datetimeSE.DatetimeE = _time.GetByFormatAndString(_time.FormatYmd, _as.String(ymTep)).AddDate(0, 1, 0).AddDate(0, 0, -1).Format(_time.FormatDate) + " 23:59:59"
@@ -63,13 +54,8 @@ func FormatByYm(datetimeS string, datetimeE string) (o []DatetimeSE) {
 			datetimeSE.DatetimeS = _time.GetByFormatAndString(_time.FormatYmd, _as.String(ymTep)).Format(_time.FormatDate + " 00:00:00")
 			datetimeSE.DatetimeE = _time.GetByFormatAndString(_time.FormatYmd, _as.String(ymTep)).AddDate(0, 1, 0).AddDate(0, 0, -1).Format(_time.FormatDate) + " 23:59:59"
 		}
-
 		o = append(o, datetimeSE)
-
 		ymTep = _as.Int(_time.GetByFormatAndString(_time.FormatYmd, _as.String(ymTep)).AddDate(0, 1, 0).Format(_time.FormatYm) + "01")
-
 	}
-
 	return o
-
 }

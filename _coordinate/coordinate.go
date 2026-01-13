@@ -53,7 +53,6 @@ func transform(lngLat [2]float64) [2]float64 {
 	dLon = (dLon * 180.0) / (A / sqrtMagic * math.Cos(radLat) * math.Pi)
 	return [2]float64{lon + dLon, lat + dLat}
 }
-
 func ConvertWGS84ToGCJ02(lngLat [2]float64) [2]float64 {
 	lon, lat := lngLat[0], lngLat[1]
 	if isOutOfChina(lngLat) {
@@ -126,7 +125,6 @@ func GetAngle(lngLatFrom [2]float64, lngLatTo [2]float64) float64 {
 	y := math.Sin(dLon) * math.Cos(latB)
 	return math.Atan2(y, x) * 180 / math.Pi
 }
-
 func ConvertLngLatToXY(lngLat [2]float64) [2]float64 {
 	lng := lngLat[0]
 	lat := lngLat[1]
@@ -144,7 +142,6 @@ func ConvertXYToLngLat(xy [2]float64) [2]float64 {
 		(2*math.Atan(math.Exp(y/YR)) - math.Pi/2) * MR,
 	}
 }
-
 func Distance(p1 [2]float64, p2 [2]float64) float64 {
 	rad := VR
 	lat1 := p1[1] * rad
@@ -158,8 +155,6 @@ func Distance(p1 [2]float64, p2 [2]float64) float64 {
 func DistancePToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) float64 {
 	return Distance(p, PToP1P2(p, p1, p2))
 }
-
-// 需要考虑p1和2几乎是一个位置
 func PToP1P2(p [2]float64, p1 [2]float64, p2 [2]float64) [2]float64 {
 	xy := ConvertLngLatToXY(p)
 	xy1 := ConvertLngLatToXY(p1)

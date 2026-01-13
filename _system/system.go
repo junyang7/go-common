@@ -7,17 +7,13 @@ import (
 )
 
 func Memory() *mem.VirtualMemoryStat {
-
 	stat, err := mem.VirtualMemory()
 	_interceptor.Insure(nil == err).Message(err).Do()
 	return stat
-
 }
 
 func Disk(path string) *disk.UsageStat {
-
 	stat, err := disk.Usage(path)
 	_interceptor.Insure(nil == err).Message(err).Do()
 	return stat
-
 }

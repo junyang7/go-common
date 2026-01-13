@@ -43,7 +43,6 @@ func TestGet_Text(t *testing.T) {
 		_assert.Equal(t, "text/markdown", Get("README.md"))
 	}
 }
-
 func TestGet_Image(t *testing.T) {
 	// JPEG
 	{
@@ -82,7 +81,6 @@ func TestGet_Image(t *testing.T) {
 		_assert.Equal(t, "image/x-icon", Get("favicon.ico"))
 	}
 }
-
 func TestGet_Audio(t *testing.T) {
 	// MP3
 	{
@@ -110,7 +108,6 @@ func TestGet_Audio(t *testing.T) {
 		_assert.Equal(t, "audio/aac", Get("track.aac"))
 	}
 }
-
 func TestGet_Video(t *testing.T) {
 	// MP4
 	{
@@ -143,7 +140,6 @@ func TestGet_Video(t *testing.T) {
 		_assert.Equal(t, "video/quicktime", Get("movie.mov"))
 	}
 }
-
 func TestGet_Application(t *testing.T) {
 	// JSON
 	{
@@ -191,7 +187,6 @@ func TestGet_Application(t *testing.T) {
 		_assert.Equal(t, "application/toml", Get("config.toml"))
 	}
 }
-
 func TestGet_Font(t *testing.T) {
 	// WOFF
 	{
@@ -213,7 +208,6 @@ func TestGet_Font(t *testing.T) {
 		_assert.Equal(t, "font/otf", Get("font.otf"))
 	}
 }
-
 func TestGet_Script(t *testing.T) {
 	// TypeScript
 	{
@@ -230,7 +224,6 @@ func TestGet_Script(t *testing.T) {
 		_assert.Equal(t, "text/tsx", Get("component.tsx"))
 	}
 }
-
 func TestGet_EdgeCases(t *testing.T) {
 	// 无扩展名
 	{
@@ -267,16 +260,13 @@ func TestGet_EdgeCases(t *testing.T) {
 		_assert.Equal(t, "application/gzip", Get("archive.tar.gz"))
 	}
 }
-
 func BenchmarkGet(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Get("image.jpg")
 	}
 }
-
 func BenchmarkGet_Unknown(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Get("file.unknown")
 	}
 }
-
