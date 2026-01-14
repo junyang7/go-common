@@ -95,7 +95,7 @@ type http struct {
 	data        map[string]string
 	file        map[string]string
 	body        []byte
-	v           interface{}
+	bind        interface{}
 }
 
 func NewHttp() *http {
@@ -152,8 +152,8 @@ func (this *http) File(name string, path string) *http {
 	this.file[name] = path
 	return this
 }
-func (this *http) Bind(v interface{}) *http {
-	this.v = v
+func (this *http) Bind(bind interface{}) *http {
+	this.bind = bind
 	return this
 }
 func (this *http) Do() []byte {
@@ -234,7 +234,9 @@ func (this *http) Do() []byte {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 	if strings.HasPrefix(strings.ToLower(res.Header.Get("content-type")), Json) {
-		_json.Decode(b, this.v)
+		if nil != this.bind {
+			_json.Decode(b, this.bind)
+		}
 	}
 	return b
 }

@@ -118,6 +118,10 @@ func (c *Context) prepareServer() {
 	c.server["upgrade-insecure-requests"] = c.r.Header.Get("Upgrade-Insecure-Requests")
 }
 func (c *Context) prepareBody() {
+	contentType := c.helpContentType()
+	if "application/x-www-form-urlencoded" == contentType || "multipart/form-data" == contentType {
+		return
+	}
 	b, err := io.ReadAll(c.r.Body)
 	if err != nil {
 		_interceptor.Insure(false).Message(err).Do()

@@ -59,6 +59,8 @@ func (this *httpEngine) Run() {
 	apiAddr := this.api.getAddr()
 	wg := sync.WaitGroup{}
 	if webNetwork == apiNetwork && webAddr == apiAddr {
+		this.api.check()
+		this.web.check()
 		wg.Add(1)
 		go func() {
 			defer func() {
@@ -73,6 +75,7 @@ func (this *httpEngine) Run() {
 				}})
 		}()
 	} else {
+		this.web.check()
 		wg.Add(1)
 		go func() {
 			defer func() {
@@ -85,6 +88,7 @@ func (this *httpEngine) Run() {
 					"/": this.web.check().ServeWeb,
 				}})
 		}()
+		this.api.check()
 		wg.Add(1)
 		go func() {
 			defer func() {
