@@ -18,6 +18,9 @@ type @1@ struct {
 }`
 
 func Build(root string, dbName string, tbName string, showCreateTable string) {
+	if !_directory.Exists(root) {
+		_directory.Create(root)
+	}
 	fieldList := []string{}
 	matchedList := regexp.MustCompile("`(\\w+)`\\s+(\\w+)").FindAllStringSubmatch(showCreateTable, -1)
 	for _, matched := range matchedList {
@@ -42,6 +45,9 @@ func Build(root string, dbName string, tbName string, showCreateTable string) {
 }
 func BuildByAuto() {
 	root := _directory.Current() + "/table"
+	if !_directory.Exists(root) {
+		_directory.Create(root)
+	}
 	poolDict := _sql.GetPoolDict()
 	for uk, poolList := range poolDict {
 		dbName := strings.TrimSuffix(strings.TrimSuffix(uk, ".master"), ".slaver")

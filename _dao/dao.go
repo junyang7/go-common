@@ -18,6 +18,9 @@ func @1@() *_sql.Sql {
 }`
 
 func Build(root string, dbName string, tbName string) {
+	if !_directory.Exists(root) {
+		_directory.Create(root)
+	}
 	tpl := Tpl
 	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(dbName+"_"+tbName))
 	tpl = _string.ReplaceAll(tpl, "@2@", dbName)
@@ -27,6 +30,9 @@ func Build(root string, dbName string, tbName string) {
 }
 func BuildByAuto() {
 	root := _directory.Current() + "/dao"
+	if !_directory.Exists(root) {
+		_directory.Create(root)
+	}
 	poolDict := _sql.GetPoolDict()
 	for uk, poolList := range poolDict {
 		dbName := strings.TrimSuffix(strings.TrimSuffix(uk, ".master"), ".slaver")
