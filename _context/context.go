@@ -269,7 +269,11 @@ func (c *Context) FileAll() map[string][]*multipart.FileHeader {
 	return c.file
 }
 func (c *Context) Bind(v interface{}) {
-	_bind.Do(v, c.request)
+	if "application/json" == c.helpContentType() {
+		c.BindBody(v)
+	} else {
+		c.BindRequest(v)
+	}
 }
 func (c *Context) BindGet(v interface{}) {
 	_bind.Do(v, c.get)
