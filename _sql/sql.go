@@ -104,8 +104,8 @@ type Sql struct {
 	where             string                   // where条件
 	field             string                   // 字段
 	index             string                   // 索引
-	offset            int                      // 偏移量
-	limit             int                      // 限制数
+	offset            int64                    // 偏移量
+	limit             int64                    // 限制数
 	order             string                   // 排序
 	group             string                   // 分组
 	having            string                   // having条件
@@ -174,11 +174,11 @@ func (this *Sql) Index(index string) *Sql {
 	this.index = index
 	return this
 }
-func (this *Sql) Offset(offset int) *Sql {
+func (this *Sql) Offset(offset int64) *Sql {
 	this.offset = offset
 	return this
 }
-func (this *Sql) Limit(limit int) *Sql {
+func (this *Sql) Limit(limit int64) *Sql {
 	this.limit = limit
 	return this
 }
@@ -455,7 +455,7 @@ func (this *Sql) getIndex() string {
 		return " FORCE INDEX (" + this.index + ")"
 	}
 }
-func (this *Sql) getOffset() int {
+func (this *Sql) getOffset() int64 {
 	return this.offset
 }
 func (this *Sql) getLimit() string {
