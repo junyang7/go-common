@@ -19,3 +19,6 @@ func InspectPort(name string) (o map[int64]int64) {
 	}
 	return o
 }
+func GetContainerIpv4(name string) string {
+	return strings.TrimSpace(_cmd.ExecuteAsString(`docker`, `inspect`, `-f`, `{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}`, name))
+}
