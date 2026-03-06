@@ -8,6 +8,8 @@ import (
 	"github.com/junyang7/go-common/_directory"
 	"github.com/junyang7/go-common/_file"
 	"github.com/junyang7/go-common/_is"
+	"github.com/junyang7/go-common/_lock"
+	"path/filepath"
 	"strings"
 )
 
@@ -27,21 +29,33 @@ func Write(name string, message ...interface{}) {
 	write(name, message...)
 }
 func write(name string, messageList ...interface{}) {
-	root := _conf.Get("log.root").String().Default("").Value()
-	if _is.Empty(root) {
+	if _is.Empty(name) {
 		return
 	}
-	if !strings.HasPrefix(root, "/") {
-		return
+	file := ""
+	if strings.HasPrefix(name, "/") {
+		file = name + "." + _date.GetByYmd()
+	} else {
+		root := _conf.Get("log.root").String().Default("").Value()
+		if _is.Empty(root) {
+			return
+		}
+		if !strings.HasPrefix(root, "/") {
+			return
+		}
+		file = root + "/" + name + "." + _date.GetByYmd()
 	}
-	if !_directory.Exists(root) {
-		_directory.Create(root)
+	path := filepath.Dir(file)
+	if !_directory.Exists(path) {
+		_directory.Create(path)
 	}
-	path := root + "/" + name + "." + _date.GetByYmd()
-	content := _datetimeMilli.Get() + "\t" + name
+	content := _datetimeMilli.Get()
 	for _, message := range messageList {
 		content += "\t" + _as.String(message)
 	}
 	content += "\n"
-	_file.Append(path, content)
+	lock := _lock.Get(file)
+	lock.Lock()
+	defer lock.Unlock()
+	_file.Append(file, content)
 }
