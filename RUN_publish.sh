@@ -3,8 +3,8 @@
 set -e
 
 FILE="./VERSION"
-TIMESTAMP="$(/bin/date +%Y%m%d%H%M%S)"
-VERSION="$(/bin/cat "$FILE")"
+TIMESTAMP="$(date +%Y%m%d%H%M%S)"
+VERSION="$(cat "$FILE")"
 IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 NEW_VERSION="${MAJOR}.${MINOR}.${TIMESTAMP}"
 echo "$NEW_VERSION" > "$FILE"
