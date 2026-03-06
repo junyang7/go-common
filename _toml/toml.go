@@ -28,6 +28,15 @@ func Decode(source []byte, target interface{}) {
 		_interceptor.Insure(false).Message(err).Do()
 	}
 }
+func ReadByByte(byte []byte, v interface{}) {
+	Decode(byte, v)
+}
+func ReadByPath(path string, v interface{}) {
+	Decode(_file.ReadAll(path), v)
+}
+func ReadByText(text string, v interface{}) {
+	Decode([]byte(text), v)
+}
 
 type reader struct {
 	v interface{}
