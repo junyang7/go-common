@@ -3,6 +3,7 @@ package _port
 import (
 	"fmt"
 	"github.com/junyang7/go-common/_list"
+	"net"
 	"os/exec"
 )
 
@@ -12,13 +13,28 @@ func IsUsing(port int) bool {
 	return nil == err
 }
 func GetList(count int) (o []int) {
-	for i := 1; i <= 65535; i++ {
-		if !IsUsing(i) {
-			o = append(o, i)
-			if len(o) >= count {
-				break
-			}
+	//for i := 1; i <= 65535; i++ {
+	//	if !IsUsing(i) {
+	//		o = append(o, i)
+	//		if len(o) >= count {
+	//			break
+	//		}
+	//	}
+	//}
+	//return o
+	o = make([]int, 0, count)
+	listenerList := make([]net.Listener, 0, count)
+	for i := 0; i < count; i++ {
+		l, err := net.Listen("tcp", ":0")
+		if err != nil {
+			continue
 		}
+		addr := l.Addr().(*net.TCPAddr)
+		o = append(o, addr.Port)
+		listenerList = append(listenerList, l)
+	}
+	for _, ln := range listenerList {
+		ln.Close()
 	}
 	return o
 }
