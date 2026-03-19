@@ -3,6 +3,7 @@ package _list
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type List interface {
@@ -84,4 +85,7 @@ func GroupBy[V any, K comparable](vList []V, f func(V) K) map[K]V {
 		res[k] = v
 	}
 	return res
+}
+func Explode(separator string, s string) []string {
+	return strings.Split(s, separator)
 }
