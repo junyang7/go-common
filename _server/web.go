@@ -8,6 +8,8 @@ import (
 	"github.com/junyang7/go-common/_json"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -214,7 +216,22 @@ func (this *webEngineProcessor) doMiddlewareBefore() {
 	// TODO 预留
 }
 func (this *webEngineProcessor) doBusiness() {
-	http.FileServer(http.Dir(this.root)).ServeHTTP(this.w, this.r)
+	//http.FileServer(http.Dir(this.root)).ServeHTTP(this.w, this.r)
+	if ext := filepath.Ext(this.r.URL.Path); ext != "" {
+		http.FileServer(http.Dir(this.root)).ServeHTTP(this.w, this.r)
+		return
+	}
+	path := filepath.Join(this.root, filepath.Clean("/"+this.r.URL.Path))
+	rel, err := filepath.Rel(this.root, path)
+	if err != nil || strings.HasPrefix(rel, "..") {
+		http.Error(this.w, "403 Forbidden", http.StatusForbidden)
+		return
+	}
+	if info, err := os.Stat(path); err == nil && !info.IsDir() {
+		http.ServeFile(this.w, this.r, path)
+		return
+	}
+	http.ServeFile(this.w, this.r, filepath.Join(this.root, "index.html"))
 }
 func (this *webEngineProcessor) doMiddlewareAfter() {
 	// TODO 预留
