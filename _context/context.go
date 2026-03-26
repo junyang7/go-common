@@ -354,3 +354,6 @@ func (c *Context) REDIRECT(uri string) {
 	c.w.Header().Set("Location", uri)
 	c.w.WriteHeader(301)
 }
+func (c *Context) WriteHeader(statusCode int) {
+	c.w.WriteHeader(statusCode)
+}
