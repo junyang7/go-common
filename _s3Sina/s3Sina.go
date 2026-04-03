@@ -3,6 +3,10 @@ package _s3Sina
 import (
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_s3Sina/sdk"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -49,4 +53,30 @@ func Upload(accessKey string, secretKey string, bucket string, localFile string,
 func GetSignedUrl(accessKey string, secretKey string, bucket string, cloudFile string, ttl int64) string {
 	b := sdk.NewSCS(accessKey, secretKey, "https://gslb.sinastorage.cn").Bucket(bucket)
 	return b.SignURL(cloudFile, time.Now().Add(time.Second*time.Duration(ttl)))
+}
+func UploadByCtxFile(accessKey string, secretKey string, bucket string, fileHeader *multipart.FileHeader, cloudFile string, acl string, ttl int64) string {
+	src, err := fileHeader.Open()
+	_interceptor.
+		Insure(nil == err).
+		Message(err).
+		Do()
+	defer src.Close()
+	tmp, err := os.CreateTemp("", "s3Sina-*"+filepath.Ext(fileHeader.Filename))
+	_interceptor.
+		Insure(nil == err).
+		Message(err).
+		Do()
+	tmpPath := tmp.Name()
+	defer os.Remove(tmpPath)
+	_, err = io.Copy(tmp, src)
+	_interceptor.
+		Insure(nil == err).
+		Message(err).
+		Do()
+	err = tmp.Close()
+	_interceptor.
+		Insure(nil == err).
+		Message(err).
+		Do()
+	return Upload(accessKey, secretKey, bucket, tmpPath, cloudFile, acl, ttl)
 }
