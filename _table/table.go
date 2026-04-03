@@ -3,8 +3,10 @@ package _table
 import (
 	"fmt"
 	"github.com/junyang7/go-common/_cmd"
+	"github.com/junyang7/go-common/_conf"
 	"github.com/junyang7/go-common/_directory"
 	"github.com/junyang7/go-common/_file"
+	"github.com/junyang7/go-common/_json"
 	"github.com/junyang7/go-common/_name"
 	"github.com/junyang7/go-common/_sql"
 	"github.com/junyang7/go-common/_string"
@@ -48,14 +50,25 @@ func BuildByAuto() {
 	if !_directory.Exists(root) {
 		_directory.Create(root)
 	}
-	poolDict := _sql.GetPoolDict()
-	for uk, poolList := range poolDict {
-		dbName := strings.TrimSuffix(strings.TrimSuffix(uk, ".master"), ".slaver")
-		pool := poolList[0]
-		tableList := _sql.New().Pool(pool).Sql(fmt.Sprintf("SELECT `table_name` as `table` FROM `information_schema`.`tables` where `table_schema` = '%s'", dbName)).Query()
+	raw := _conf.Get("sql").Value()
+	var clusterDict map[string]*_sql.Cluster
+	_json.Decode(_json.Encode(raw), &clusterDict)
+	if len(clusterDict) == 0 {
+		return
+	}
+	for dbName, ms := range clusterDict {
+		machine := &_sql.Machine{}
+		if len(ms.Master) > 0 {
+			machine = ms.Master[0]
+		}
+		if len(ms.Slaver) > 0 {
+			machine = ms.Slaver[0]
+		}
+		sql := fmt.Sprintf("SELECT `table_name` as `table` FROM `information_schema`.`tables` where `table_schema` = '%s'", machine.Database)
+		tableList := _sql.New().Business(dbName).Sql(sql).Query()
 		for _, table := range tableList {
 			tbName := table["table"]
-			res := _sql.New().Pool(pool).Sql(fmt.Sprintf("show create table %s", tbName)).Query()
+			res := _sql.New().Business(dbName).Sql(fmt.Sprintf("show create table %s", tbName)).Query()
 			showCreateTable := res[0]["Create Table"]
 			Build(root, dbName, tbName, showCreateTable)
 		}
