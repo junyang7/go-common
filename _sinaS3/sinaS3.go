@@ -1,8 +1,8 @@
-package _s3Sina
+package _sinaS3
 
 import (
 	"github.com/junyang7/go-common/_interceptor"
-	"github.com/junyang7/go-common/_s3Sina/sdk"
+	"github.com/junyang7/go-common/_sinaS3/sdk"
 	"io"
 	"mime/multipart"
 	"os"

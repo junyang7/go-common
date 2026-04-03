@@ -1,4 +1,4 @@
-package _s3Sina
+package _sinaS3
 
 import (
 	"fmt"
