@@ -670,6 +670,65 @@ func TestDo_NoJsonTag(t *testing.T) {
 		_assert.Equal(t, v.Name, "Test")
 	}
 }
+func TestDo_JsonTagOptions(t *testing.T) {
+	{
+		data := map[string]interface{}{
+			"name": "Test",
+		}
+		v := struct {
+			Name string `json:"name,omitempty"`
+		}{}
+		err := Do(&v, data)
+		_assert.NoError(t, err)
+		_assert.Equal(t, v.Name, "Test")
+	}
+	{
+		data := map[string]interface{}{
+			"Field": "Test",
+		}
+		v := struct {
+			Field string `json:",omitempty"`
+		}{}
+		err := Do(&v, data)
+		_assert.NoError(t, err)
+		_assert.Equal(t, v.Field, "Test")
+	}
+	{
+		data := map[string]interface{}{
+			"value": "123",
+		}
+		v := struct {
+			Value string `json:"value,string"`
+		}{}
+		err := Do(&v, data)
+		_assert.NoError(t, err)
+		_assert.Equal(t, v.Value, "123")
+	}
+}
+func TestDo_JsonTagIgnore(t *testing.T) {
+	{
+		data := map[string]interface{}{
+			"-": "should_not_bind",
+		}
+		v := struct {
+			Skip string `json:"-"`
+		}{}
+		err := Do(&v, data)
+		_assert.NoError(t, err)
+		_assert.Equal(t, v.Skip, "")
+	}
+	{
+		data := map[string]interface{}{
+			"-": "can_bind",
+		}
+		v := struct {
+			Value string `json:"-,"`
+		}{}
+		err := Do(&v, data)
+		_assert.NoError(t, err)
+		_assert.Equal(t, v.Value, "can_bind")
+	}
+}
 func TestDo_StructFieldNotMap(t *testing.T) {
 	{
 		data := map[string]interface{}{

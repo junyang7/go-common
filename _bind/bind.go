@@ -3,6 +3,7 @@ package _bind
 import (
 	"github.com/junyang7/go-common/_as"
 	"reflect"
+	"strings"
 )
 
 func Do(v interface{}, data map[string]interface{}) error {
@@ -22,10 +23,9 @@ func Do(v interface{}, data map[string]interface{}) error {
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
 		fieldType := val.Type().Field(i)
-		fieldName := fieldType.Name
-		tagName := fieldType.Tag.Get("json")
-		if tagName == "" {
-			tagName = fieldName
+		tagName, skip := resolveJSONTagName(fieldType)
+		if skip {
+			continue
 		}
 		dataValue, exists := data[tagName]
 		if !exists {
@@ -90,4 +90,21 @@ func Do(v interface{}, data map[string]interface{}) error {
 		}
 	}
 	return nil
+}
+func resolveJSONTagName(fieldType reflect.StructField) (string, bool) {
+	fieldName := fieldType.Name
+	tagName := fieldType.Tag.Get("json")
+	if tagName == "" {
+		return fieldName, false
+	}
+	if tagName == "-" {
+		return "", true
+	}
+	if index := strings.IndexByte(tagName, ','); index >= 0 {
+		tagName = tagName[:index]
+	}
+	if tagName == "" {
+		return fieldName, false
+	}
+	return tagName, false
 }

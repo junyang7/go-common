@@ -297,32 +297,7 @@ func (this *Sql) GetList() (o []map[string]string) {
 		if bind.Kind() == reflect.Ptr && bind.Elem().Kind() == reflect.Slice && bind.Elem().Type().Elem().Kind() == reflect.Struct {
 			for _, row := range o {
 				v := reflect.New(bind.Elem().Type().Elem()).Elem()
-				t := v.Type()
-				for i := 0; i < v.NumField(); i++ {
-					f := v.Field(i)
-					n := t.Field(i).Tag.Get("sql")
-					if !_list.In(n, this.ignore) {
-						switch f.Kind() {
-						case reflect.String:
-							f.SetString(row[n])
-							break
-						case reflect.Bool:
-							f.SetBool(_as.Bool(row[n]))
-							break
-						case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-							f.SetInt(_as.Int64(row[n]))
-							break
-						case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-							f.SetUint(_as.Uint64(row[n]))
-							break
-						case reflect.Float32, reflect.Float64:
-							f.SetFloat(_as.Float64(row[n]))
-							break
-						default:
-							_interceptor.Insure(false).Message("数据类型不支持").Do()
-						}
-					}
-				}
+				this.bindRowToStruct(row, v)
 				bind.Elem().Set(reflect.Append(bind.Elem(), v))
 			}
 		}
@@ -341,34 +316,8 @@ func (this *Sql) Get() (o map[string]string) {
 		bind := reflect.ValueOf(this.bind)
 		if bind.Kind() == reflect.Ptr && bind.Elem().Kind() == reflect.Struct {
 			v := bind.Elem()
-			t := v.Type()
 			if len(o) > 0 {
-				row := o
-				for i := 0; i < v.NumField(); i++ {
-					f := v.Field(i)
-					n := t.Field(i).Tag.Get("sql")
-					if !_list.In(n, this.ignore) {
-						switch f.Kind() {
-						case reflect.String:
-							f.SetString(row[n])
-							break
-						case reflect.Bool:
-							f.SetBool(_as.Bool(row[n]))
-							break
-						case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-							f.SetInt(_as.Int64(row[n]))
-							break
-						case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-							f.SetUint(_as.Uint64(row[n]))
-							break
-						case reflect.Float32, reflect.Float64:
-							f.SetFloat(_as.Float64(row[n]))
-							break
-						default:
-							_interceptor.Insure(false).Message("数据类型不支持").Do()
-						}
-					}
-				}
+				this.bindRowToStruct(o, v)
 			}
 		}
 	}
@@ -383,14 +332,14 @@ func (this *Sql) Count() (o int64) {
 		o = 0
 	}
 	if nil != this.bind {
-		if this.bind == nil {
-			return
-		}
 		bind := reflect.ValueOf(this.bind)
-		if bind.Kind() != reflect.Ptr {
+		if bind.Kind() != reflect.Ptr || bind.IsNil() {
 			return
 		}
 		elem := bind.Elem()
+		if !elem.IsValid() || !elem.CanSet() {
+			return
+		}
 		val := reflect.ValueOf(o)
 		if val.Type().AssignableTo(elem.Type()) {
 			elem.Set(val)
@@ -642,29 +591,85 @@ func (this *Sql) buildRowList() *Sql {
 				}
 			}
 			if item.Kind() == reflect.Struct {
-				row := make(map[string]interface{})
-				for k := 0; k < item.NumField(); k++ {
-					f := item.Field(k)
-					n := item.Type().Field(k).Tag.Get("sql")
-					if n != "" && !_list.In(n, this.ignore) {
-						row[n] = f.Interface()
-					}
-				}
-				this.Row(row)
+				this.Row(this.structToRow(item))
 			}
 		}
 	} else if elem.Kind() == reflect.Struct {
-		row := make(map[string]interface{})
-		for k := 0; k < elem.NumField(); k++ {
-			f := elem.Field(k)
-			n := elem.Type().Field(k).Tag.Get("sql")
-			if n != "" && !_list.In(n, this.ignore) {
-				row[n] = f.Interface()
-			}
-		}
-		this.Row(row)
+		this.Row(this.structToRow(elem))
 	}
 	return this
+}
+func (this *Sql) bindRowToStruct(row map[string]string, v reflect.Value) {
+	if v.Kind() != reflect.Struct {
+		return
+	}
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldType := t.Field(i)
+		name, ok := resolveSQLTagName(fieldType)
+		if !ok || _list.In(name, this.ignore) {
+			continue
+		}
+		f := v.Field(i)
+		if !f.CanSet() {
+			continue
+		}
+		value, exists := row[name]
+		if !exists {
+			continue
+		}
+		switch f.Kind() {
+		case reflect.String:
+			f.SetString(value)
+		case reflect.Bool:
+			f.SetBool(_as.Bool(value))
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			f.SetInt(_as.Int64(value))
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			f.SetUint(_as.Uint64(value))
+		case reflect.Float32, reflect.Float64:
+			f.SetFloat(_as.Float64(value))
+		default:
+			_interceptor.Insure(false).Message("数据类型不支持").Do()
+		}
+	}
+}
+func (this *Sql) structToRow(v reflect.Value) map[string]interface{} {
+	row := make(map[string]interface{})
+	if v.Kind() != reflect.Struct {
+		return row
+	}
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldType := t.Field(i)
+		name, ok := resolveSQLTagName(fieldType)
+		if !ok || _list.In(name, this.ignore) {
+			continue
+		}
+		f := v.Field(i)
+		if !f.CanInterface() {
+			continue
+		}
+		row[name] = f.Interface()
+	}
+	return row
+}
+func resolveSQLTagName(fieldType reflect.StructField) (string, bool) {
+	tagName, exists := fieldType.Tag.Lookup("sql")
+	if !exists {
+		return "", false
+	}
+	if tagName == "-" {
+		return "", false
+	}
+	if index := strings.IndexByte(tagName, ','); index >= 0 {
+		tagName = tagName[:index]
+	}
+	tagName = strings.TrimSpace(tagName)
+	if tagName == "" {
+		return "", false
+	}
+	return tagName, true
 }
 func (this *Sql) query() []map[string]string {
 	var rowList *sql.Rows
