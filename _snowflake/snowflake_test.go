@@ -22,6 +22,9 @@ func TestNewInitializesBitLayout(t *testing.T) {
 	if sf.maxSequence != 4095 {
 		t.Fatalf("maxSequence mismatch: got %d, want %d", sf.maxSequence, 4095)
 	}
+	if sf.nodeId != 7 {
+		t.Fatalf("nodeId mismatch: got %d, want %d", sf.nodeId, 7)
+	}
 }
 func TestIdEncodesTimeNodeAndSequence(t *testing.T) {
 	epoch := time.Now().Add(-time.Second).UnixMilli()
@@ -35,8 +38,8 @@ func TestIdEncodesTimeNodeAndSequence(t *testing.T) {
 	nodePart := (id >> sf.nodeShift) & sf.maxNodeID
 	sequencePart := id & sf.maxSequence
 
-	if nodePart != sf.NodeId {
-		t.Fatalf("node part mismatch: got %d, want %d", nodePart, sf.NodeId)
+	if nodePart != sf.nodeId {
+		t.Fatalf("node part mismatch: got %d, want %d", nodePart, sf.nodeId)
 	}
 	if sequencePart != 0 {
 		t.Fatalf("first sequence should be 0: got %d", sequencePart)
@@ -74,6 +77,25 @@ func TestNewRejectsInvalidNodeID(t *testing.T) {
 		t.Fatalf("unexpected message: %s", exception.Message)
 	}
 }
+
+func TestNewReturnsSameInstanceForSameConfig(t *testing.T) {
+	first := New(1700000000000, 10, 12, 3)
+	second := New(1700000000000, 10, 12, 3)
+
+	if first != second {
+		t.Fatal("expected same instance for identical config")
+	}
+}
+
+func TestNewReturnsDifferentInstancesForDifferentConfig(t *testing.T) {
+	first := New(1700000000000, 10, 12, 3)
+	second := New(1700000000001, 10, 12, 3)
+
+	if first == second {
+		t.Fatal("expected different instances for different config")
+	}
+}
+
 func TestIdListRejectsNonPositiveCount(t *testing.T) {
 	sf := New(1700000000000, 10, 12, 1)
 

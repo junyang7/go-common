@@ -1,13 +1,17 @@
 package _snowflake
 
 import (
+	"fmt"
 	"github.com/junyang7/go-common/_interceptor"
 	"github.com/junyang7/go-common/_time"
 	"sync"
 	"time"
 )
 
-type Snowflake struct {
+var snowflakeDict = map[string]*snowflake{}
+var m = sync.RWMutex{}
+
+type snowflake struct {
 	epochMs       int64 // 1580608922000
 	nodeBit       uint8 // 10
 	sequenceBit   uint8 // 12
@@ -21,7 +25,20 @@ type Snowflake struct {
 	mu            sync.Mutex
 }
 
-func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *Snowflake {
+func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *snowflake {
+	uk := fmt.Sprintf("%d:%d:%d:%d", epochMs, nodeBit, sequenceBit, nodeId)
+	m.RLock()
+	s, ok := snowflakeDict[uk]
+	m.RUnlock()
+	if ok {
+		return s
+	}
+	m.Lock()
+	defer m.Unlock()
+	s, ok = snowflakeDict[uk]
+	if ok {
+		return s
+	}
 	_interceptor.
 		Insure(epochMs >= 0).
 		Message("epochMs 不能小于 0").
@@ -47,7 +64,7 @@ func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *Snowfla
 			"maxNodeID": maxNodeID,
 		}).
 		Do()
-	return &Snowflake{
+	snowflakeDict[uk] = &snowflake{
 		epochMs:       epochMs,
 		nodeBit:       nodeBit,
 		sequenceBit:   sequenceBit,
@@ -58,11 +75,12 @@ func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *Snowfla
 		nodeShift:     sequenceBit,
 		timeShift:     nodeBit + sequenceBit,
 	}
+	return snowflakeDict[uk]
 }
-func (this *Snowflake) Id() int64 {
+func (this *snowflake) Id() int64 {
 	return this.IdList(1)[0]
 }
-func (this *Snowflake) IdList(count int) []int64 {
+func (this *snowflake) IdList(count int) []int64 {
 	_interceptor.
 		Insure(count > 0).
 		Message("count必须大于0").
@@ -78,7 +96,7 @@ func (this *Snowflake) IdList(count int) []int64 {
 	}
 	return idList
 }
-func (this *Snowflake) nextIDLocked() int64 {
+func (this *snowflake) nextIDLocked() int64 {
 	now := time.Now().UnixMilli()
 	_interceptor.
 		Insure(now >= this.epochMs).
