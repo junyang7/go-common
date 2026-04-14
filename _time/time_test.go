@@ -1,6 +1,7 @@
 package _time
 
 import (
+	"fmt"
 	"github.com/junyang7/go-common/_assert"
 	"testing"
 	"time"
@@ -72,5 +73,11 @@ func TestFormat(t *testing.T) {
 		expected := currentTime.Format(FormatDatetime)
 		result := Format(currentTime, FormatDatetime)
 		_assert.Equal(t, result, expected)
+	}
+}
+func TestFormatByTime(t *testing.T) {
+	{
+		t := time.Now()
+		fmt.Println(FormatByTime(t))
 	}
 }
