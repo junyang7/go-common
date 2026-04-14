@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type snowflake struct {
+type Snowflake struct {
 	epochMs       int64 // 1580608922000
-	NodeBit       uint8 // 10
-	SequenceBit   uint8 // 12
-	NodeId        int64
+	nodeBit       uint8 // 10
+	sequenceBit   uint8 // 12
+	nodeId        int64
 	maxNodeID     int64 // [0,1023]
 	maxSequence   int64 // [0,4095]
 	lastTimestamp int64
@@ -21,7 +21,7 @@ type snowflake struct {
 	mu            sync.Mutex
 }
 
-func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *snowflake {
+func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *Snowflake {
 	_interceptor.
 		Insure(epochMs >= 0).
 		Message("epochMs 不能小于 0").
@@ -47,11 +47,11 @@ func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *snowfla
 			"maxNodeID": maxNodeID,
 		}).
 		Do()
-	return &snowflake{
+	return &Snowflake{
 		epochMs:       epochMs,
-		NodeBit:       nodeBit,
-		SequenceBit:   sequenceBit,
-		NodeId:        nodeId,
+		nodeBit:       nodeBit,
+		sequenceBit:   sequenceBit,
+		nodeId:        nodeId,
 		maxNodeID:     maxNodeID,
 		maxSequence:   maxSequence,
 		lastTimestamp: -1,
@@ -59,10 +59,10 @@ func New(epochMs int64, nodeBit uint8, sequenceBit uint8, nodeId int64) *snowfla
 		timeShift:     nodeBit + sequenceBit,
 	}
 }
-func (this *snowflake) Id() int64 {
+func (this *Snowflake) Id() int64 {
 	return this.IdList(1)[0]
 }
-func (this *snowflake) IdList(count int) []int64 {
+func (this *Snowflake) IdList(count int) []int64 {
 	_interceptor.
 		Insure(count > 0).
 		Message("count必须大于0").
@@ -78,7 +78,7 @@ func (this *snowflake) IdList(count int) []int64 {
 	}
 	return idList
 }
-func (this *snowflake) nextIDLocked() int64 {
+func (this *Snowflake) nextIDLocked() int64 {
 	now := time.Now().UnixMilli()
 	_interceptor.
 		Insure(now >= this.epochMs).
@@ -100,5 +100,5 @@ func (this *snowflake) nextIDLocked() int64 {
 		this.sequence = 0
 	}
 	this.lastTimestamp = now
-	return ((now - this.epochMs) << this.timeShift) | (this.NodeId << this.nodeShift) | this.sequence
+	return ((now - this.epochMs) << this.timeShift) | (this.nodeId << this.nodeShift) | this.sequence
 }
