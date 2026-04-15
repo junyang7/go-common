@@ -19,7 +19,7 @@ type @1@ struct {
 @2@
 }`
 
-func Build(root string, dbName string, tbName string, showCreateTable string) {
+func Build(useDatabasePrefix bool, root string, dbName string, tbName string, showCreateTable string) {
 	if !_directory.Exists(root) {
 		_directory.Create(root)
 	}
@@ -40,12 +40,16 @@ func Build(root string, dbName string, tbName string, showCreateTable string) {
 	}
 	field := strings.Join(fieldList, "\n")
 	tpl := Tpl
-	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(dbName+"_"+tbName))
 	tpl = _string.ReplaceAll(tpl, "@2@", field)
-	path := root + "/" + dbName + "_" + tbName + ".go"
+	prefix := ""
+	if useDatabasePrefix {
+		prefix = dbName + "_"
+	}
+	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(prefix+tbName))
+	path := root + "/" + prefix + tbName + ".go"
 	_file.Write(path, tpl)
 }
-func BuildByAuto() {
+func BuildByAuto(useDatabasePrefix bool) {
 	root := _directory.Current() + "/table"
 	if !_directory.Exists(root) {
 		_directory.Create(root)
@@ -70,7 +74,7 @@ func BuildByAuto() {
 			tbName := table["table"]
 			res := _sql.New().Business(dbName).Sql(fmt.Sprintf("show create table %s", tbName)).Query()
 			showCreateTable := res[0]["Create Table"]
-			Build(root, dbName, tbName, showCreateTable)
+			Build(useDatabasePrefix, root, dbName, tbName, showCreateTable)
 		}
 	}
 	cmd := fmt.Sprintf("cd %s && go fmt ./...", root)
