@@ -19,18 +19,22 @@ func @1@() *_sql.Sql {
 	return _sql.New().Business("@2@").Table("@3@")
 }`
 
-func Build(root string, dbName string, tbName string) {
+func Build(useDatabasePrefix bool, root string, dbName string, tbName string) {
 	if !_directory.Exists(root) {
 		_directory.Create(root)
 	}
+	prefix := ""
+	if useDatabasePrefix {
+		prefix = dbName + "_"
+	}
 	tpl := Tpl
-	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(dbName+"_"+tbName))
+	tpl = _string.ReplaceAll(tpl, "@1@", _name.UpperCamelCase(prefix+tbName))
 	tpl = _string.ReplaceAll(tpl, "@2@", dbName)
 	tpl = _string.ReplaceAll(tpl, "@3@", tbName)
-	path := root + "/" + strings.ToLower(dbName) + "_" + strings.ToLower(tbName) + ".go"
+	path := root + "/" + strings.ToLower(prefix+tbName) + ".go"
 	_file.Write(path, tpl)
 }
-func BuildByAuto() {
+func BuildByAuto(useDatabasePrefix bool) {
 	root := _directory.Current() + "/dao"
 	if !_directory.Exists(root) {
 		_directory.Create(root)
@@ -53,7 +57,7 @@ func BuildByAuto() {
 		tableList := _sql.New().Business(dbName).Sql(sql).Query()
 		for _, table := range tableList {
 			tbName := table["table"]
-			Build(root, dbName, tbName)
+			Build(useDatabasePrefix, root, dbName, tbName)
 		}
 	}
 	cmd := fmt.Sprintf("cd %s && go fmt ./...", root)
