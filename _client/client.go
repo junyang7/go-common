@@ -148,6 +148,10 @@ func (this *http) Data(data map[string]string) *http {
 	this.data = data
 	return this
 }
+func (this *http) Body(body []byte) *http {
+	this.body = body
+	return this
+}
 func (this *http) File(name string, path string) *http {
 	this.file[name] = path
 	return this
@@ -195,7 +199,9 @@ func (this *http) Do() []byte {
 				body = _json.Encode(this.data)
 			}
 		} else {
-			if len(this.data) > 0 {
+			if len(this.body) > 0 {
+				body = this.body
+			} else if len(this.data) > 0 {
 				body = []byte(_uri.Build(this.data))
 			}
 		}
